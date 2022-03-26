@@ -26,6 +26,9 @@ import {
 
 describe("DexalotMM", function () {
   it ("Assert DexalotMM Functionality", async function (){
+    if (!C.TEAM6_TOKEN.symbol) {
+      throw Error("Need to init team6 symbol")
+    }
     const chainId = C.DEXALOT_DEV_CHAIN_ID;
 
     const wallet = await new ethers.Wallet("8e9cdb3e5c49c5382c888772e0651cb62d89837fcddb7beb5875a2cf6e412d45",  
@@ -53,18 +56,15 @@ describe("DexalotMM", function () {
     );
 
     // Setup Portfolio contract
-    // const DexPortfolioFactory = await (await ethers.getContractFactory(
-    //   "Portfolio", wallet
-    // )).connect(wallet);
-    // console.log("CONNECTED")
-    // const DexPortfolio = DexPortfolioFactory.attach(C.DEXALOT_PORTFOLIO_ADDR);
-    // console.log("DEX CONTRACT: ",DexPortfolio)
-    // const getBalanceTxn = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.TEAM6_TOKEN.address, {gasLimit: 4446620});
+    const DexPortfolioFactory = await (await ethers.getContractFactory(
+      "Portfolio", wallet
+    )).connect(wallet);
+    console.log("CONNECTED")
+    const DexPortfolio = DexPortfolioFactory.attach(C.DEXALOT_PORTFOLIO_ADDR);
+    console.log("ABOUT TO CALL getBalance()")
+    const getBalanceTxn = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, ethers.utils.formatBytes32String(C.TEAM6_TOKEN.symbol));
 
-    // // const DexPortfolio = new ethers.Contract(C.DEXALOT_PORTFOLIO_ADDR, "Portfolio", wallet)
-    // // const getBalanceTxn = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.TEAM6_TOKEN.address);
-
-    // console.log("Get balance result: ", getBalanceTxn)
+    console.log("Get balance result: ", getBalanceTxn)
 
   });
   // it("Assert LiquidaterJoe Can Liquidate", async function () {
