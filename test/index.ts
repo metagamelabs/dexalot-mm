@@ -1,10 +1,11 @@
+import { ITradePairs } from './../typechain-types/ITradePairs';
 import { Signer } from "ethers";
 import { DexalotMM } from "./../typechain-types/DexalotMM";
+import {Side, Type1} from "../src/types"
 import { expect, util } from "chai";
 import { ethers } from "hardhat";
 import C from "../src/constants";
 import { hexStripZeros } from "ethers/lib/utils";
-import { swap } from "../src/dexalot-tasks";
 import JoetrollerAbi from "../contracts/abi/Joetroller.json";
 import BigNumber from "bignumber.js";
 import "@nomiclabs/hardhat-ethers";
@@ -82,6 +83,18 @@ describe("DexalotMM", function () {
     console.log("avax balance result after deposit: ", avaxBalanceAfterDeposit)
     expect(avaxBalanceAfterDeposit.total).equals(ethers.BigNumber.from(initialAvaxBalance.total).add(ethers.utils.parseEther("10")));
 
+    const TEAM6AVAXTradePairFactory = await (await ethers.getContractFactory(
+      "TradePairs", wallet
+    ));
+    const TradePairContract = TEAM6AVAXTradePairFactory.attach("0x8664EFa775aBf51aD5b2a179E088efF5AF477c73");
+    const price = 0.1
+    console.log("TRADE AMOUNT: ", ethers.utils.parseUnits(1.0.toFixed(1), 18))
+
+    
+    // Confirm order added
+  //   const DexOrderBooksFactory = await ethers.getContractFactory("OrderBooks", wallet);
+  //   const OrderBooksContract = DexExchangeFactory.attach(C.DEXALOT_ORDERBOOK_ADDR);
+  //   const getNOrderBooks = await OrderBooksContract.getNBuyBook()
   });
   // it("Assert LiquidaterJoe Can Liquidate", async function () {
   //   // STEP 1: Initizialization
