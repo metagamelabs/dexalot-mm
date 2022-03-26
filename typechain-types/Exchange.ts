@@ -751,9 +751,7 @@ export interface Exchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    isHead(
-      overrides?: CallOverrides
-    ): Promise<
+    isHead(overrides?: CallOverrides): Promise<
       [BigNumber, BigNumber, boolean] & {
         r: BigNumber;
         p: BigNumber;
@@ -1367,9 +1365,7 @@ export interface Exchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    isHead(
-      overrides?: CallOverrides
-    ): Promise<
+    isHead(overrides?: CallOverrides): Promise<
       [BigNumber, BigNumber, boolean] & {
         r: BigNumber;
         p: BigNumber;

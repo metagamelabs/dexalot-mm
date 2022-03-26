@@ -21,8 +21,6 @@ async function main() {
   // );
 
   // console.log("JOETROLLER: markets: ", await JoetrollerContract.getAllMarkets());
-  
-  
 }
 
 // We recommend this pattern to be able to use async/await everywhere

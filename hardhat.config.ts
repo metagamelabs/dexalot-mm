@@ -32,11 +32,11 @@ task(
   "DexMMBalance",
   "Prints the Dex MM Balance",
   async (args, hre): Promise<void> => {
-    const signer = await hre.ethers.getSigner(C.DEXALOT_MM_WALLET_ADDR)
-      const balance: BigNumber = await hre.ethers.provider.getBalance(
-        signer.address
-      );
-      console.log(`${signer.address} has balance ${balance.toString()}`);
+    const signer = await hre.ethers.getSigner(C.DEXALOT_MM_WALLET_ADDR);
+    const balance: BigNumber = await hre.ethers.provider.getBalance(
+      signer.address
+    );
+    console.log(`${signer.address} has balance ${balance.toString()}`);
   }
 );
 
@@ -66,7 +66,7 @@ task(
   "fetchDeploymentAbi",
   "Prints the deployment info from api",
   async (args: any, hre): Promise<void> => {
-    console.log("ARGS: ", args)
+    console.log("ARGS: ", args);
     console.log(await fetchDeploymentAbi(args.contractName));
   }
 ).addParam("contractName", "contract name to query");
@@ -171,8 +171,8 @@ const config: HardhatUserConfig = {
     // except: []
   },
   mocha: {
-    timeout: 100000
-  }
+    timeout: 100000,
+  },
 };
 
 export default config;
