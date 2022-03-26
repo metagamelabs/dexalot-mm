@@ -4,7 +4,6 @@
 import {
   BaseContract,
   BigNumber,
-  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
@@ -20,38 +19,14 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 export interface DexalotMMInterface extends utils.Interface {
   contractName: "DexalotMM";
   functions: {
-    "doFlashloan(address,address,uint256,address)": FunctionFragment;
     "greet()": FunctionFragment;
-    "joetroller()": FunctionFragment;
-    "onFlashLoan(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setGreeting(string)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "doFlashloan",
-    values: [string, string, BigNumberish, string]
-  ): string;
   encodeFunctionData(functionFragment: "greet", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "joetroller",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "onFlashLoan",
-    values: [string, string, BigNumberish, BigNumberish, BytesLike]
-  ): string;
   encodeFunctionData(functionFragment: "setGreeting", values: [string]): string;
 
-  decodeFunctionResult(
-    functionFragment: "doFlashloan",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "greet", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "joetroller", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "onFlashLoan",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "setGreeting",
     data: BytesLike
@@ -88,26 +63,7 @@ export interface DexalotMM extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    doFlashloan(
-      flashloanLender: string,
-      borrowToken: string,
-      borrowAmount: BigNumberish,
-      victimAddr: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     greet(overrides?: CallOverrides): Promise<[string]>;
-
-    joetroller(overrides?: CallOverrides): Promise<[string]>;
-
-    onFlashLoan(
-      initiator: string,
-      token: string,
-      amount: BigNumberish,
-      fee: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     setGreeting(
       _greeting: string,
@@ -115,26 +71,7 @@ export interface DexalotMM extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  doFlashloan(
-    flashloanLender: string,
-    borrowToken: string,
-    borrowAmount: BigNumberish,
-    victimAddr: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   greet(overrides?: CallOverrides): Promise<string>;
-
-  joetroller(overrides?: CallOverrides): Promise<string>;
-
-  onFlashLoan(
-    initiator: string,
-    token: string,
-    amount: BigNumberish,
-    fee: BigNumberish,
-    data: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   setGreeting(
     _greeting: string,
@@ -142,26 +79,7 @@ export interface DexalotMM extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    doFlashloan(
-      flashloanLender: string,
-      borrowToken: string,
-      borrowAmount: BigNumberish,
-      victimAddr: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     greet(overrides?: CallOverrides): Promise<string>;
-
-    joetroller(overrides?: CallOverrides): Promise<string>;
-
-    onFlashLoan(
-      initiator: string,
-      token: string,
-      amount: BigNumberish,
-      fee: BigNumberish,
-      data: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<string>;
 
     setGreeting(_greeting: string, overrides?: CallOverrides): Promise<void>;
   };
@@ -169,26 +87,7 @@ export interface DexalotMM extends BaseContract {
   filters: {};
 
   estimateGas: {
-    doFlashloan(
-      flashloanLender: string,
-      borrowToken: string,
-      borrowAmount: BigNumberish,
-      victimAddr: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     greet(overrides?: CallOverrides): Promise<BigNumber>;
-
-    joetroller(overrides?: CallOverrides): Promise<BigNumber>;
-
-    onFlashLoan(
-      initiator: string,
-      token: string,
-      amount: BigNumberish,
-      fee: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     setGreeting(
       _greeting: string,
@@ -197,26 +96,7 @@ export interface DexalotMM extends BaseContract {
   };
 
   populateTransaction: {
-    doFlashloan(
-      flashloanLender: string,
-      borrowToken: string,
-      borrowAmount: BigNumberish,
-      victimAddr: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     greet(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    joetroller(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    onFlashLoan(
-      initiator: string,
-      token: string,
-      amount: BigNumberish,
-      fee: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     setGreeting(
       _greeting: string,

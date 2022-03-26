@@ -1,7 +1,7 @@
 import { DexalotMM } from "../typechain-types/DexalotMM";
 import { Signer } from "ethers";
 import { ethers } from "hardhat";
-import C from "./constants";
+import C from "../src/constants";
 import { SwapParameters } from "@traderjoe-xyz/sdk";
 import _ from "lodash";
 

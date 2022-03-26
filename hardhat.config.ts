@@ -5,6 +5,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber } from "ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-ethers";
+import C from "./src/constants";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
@@ -23,6 +24,18 @@ task(
     accounts.forEach((account: SignerWithAddress): void => {
       console.log(account.address);
     });
+  }
+);
+
+task(
+  "DexMMBalance",
+  "Prints the Dex MM Balance",
+  async (args, hre): Promise<void> => {
+    const signer = await hre.ethers.getSigner(C.DEXALOT_MM_WALLET_ADDR)
+      const balance: BigNumber = await hre.ethers.provider.getBalance(
+        signer.address
+      );
+      console.log(`${signer.address} has balance ${balance.toString()}`);
   }
 );
 
@@ -82,16 +95,34 @@ const config: HardhatUserConfig = {
           },
         },
       },
+      {
+        version: "0.8.3",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.8.4",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
     ],
   },
   networks: {
     hardhat: {
-      chainId: 43114,
+      chainId: 43112,
       gasPrice: 225000000000,
       forking: {
-        url: "https://api.avax.network/ext/bc/C/rpc",
+        url: "https://node.dexalot-dev.com/ext/bc/C/rpc",
         enabled: true,
-        blockNumber: 11271698,
+        // blockNumber: 11271698,
       },
     },
     local: {

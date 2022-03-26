@@ -6,22 +6,22 @@ import C from "../src/constants";
 async function main() {
   // Depoloy LiquidaterJoe
   const DexalotMMFactory = await ethers.getContractFactory("DexalotMM");
-  const ljoe = await DexalotMMFactory.deploy(C.JOETROLLER_ADDR);
+  const dexMM = await DexalotMMFactory.deploy();
 
-  await ljoe.deployed();
+  await dexMM.deployed();
 
-  console.log("LJoe deployed to:", ljoe.address);
+  console.log("DexalotMM deployed to:", dexMM.address);
 
   console.log("Deployed by: ", await DexalotMMFactory.signer.getAddress());
 
   // doin some JoeTroller expeirment
-  const JoetrollerContract = await ethers.getContractAt(
-    JoetrollerAbi,
-    C.JOETROLLER_ADDR
-  );
+  // const JoetrollerContract = await ethers.getContractAt(
+  //   JoetrollerAbi,
+  //   C.JOETROLLER_ADDR
+  // );
 
-  console.log("JOETROLLER: markets: ", await JoetrollerContract.getAllMarkets());
-
+  // console.log("JOETROLLER: markets: ", await JoetrollerContract.getAllMarkets());
+  
   
 }
 
