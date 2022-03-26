@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import { HardhatUserConfig, task } from "hardhat/config";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber } from "ethers";
+import { fetchTradingPairs, fetchDeploymentAbi } from "./src/dexalot-tasks";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-ethers";
 import C from "./src/constants";
@@ -52,6 +53,23 @@ task(
     }
   }
 );
+
+task(
+  "fetchTradingPairs",
+  "Prints the trading pairs Data from Dexalot REST API",
+  async (args, hre): Promise<void> => {
+    console.log(await fetchTradingPairs());
+  }
+);
+
+task(
+  "fetchDeploymentAbi",
+  "Prints the deployment info from api",
+  async (args: any, hre): Promise<void> => {
+    console.log("ARGS: ", args)
+    console.log(await fetchDeploymentAbi(args.contractName));
+  }
+).addParam("contractName", "contract name to query");
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
