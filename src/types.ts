@@ -1,3 +1,4 @@
+import {ethers} from "ethers";
 export interface TradePair {
   pair: string;
   base: string;
@@ -32,4 +33,8 @@ export enum Status {
   CANCELED,
   EXPIRED,
   KILLED,
+}
+
+export function B32(x: string) {
+  return ethers.utils.formatBytes32String(x);
 }

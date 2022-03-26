@@ -1,6 +1,7 @@
+import { OrderBooks } from './../typechain-types/OrderBooks';
 import { DexalotMM } from "../typechain-types/DexalotMM";
 import { ethers } from "hardhat";
-import { TradePair } from "../src/types";
+import { TradePair, B32 } from "../src/types";
 import JoetrollerAbi from "../contracts/abi/Joetroller.json";
 import {
   fetchTradingPairs,
@@ -29,12 +30,9 @@ let WALLET: Wallet;
 let PortfolioContract: Contract;
 let ExchangeContract: Contract;
 let TradePairsContract: Contract;
+let OrderBooksContract: Contract;
 
 // orderbook state
-
-function B32(x: string) {
-  return ethers.utils.formatBytes32String(x);
-}
 
 async function initData() {
   const tradingPairsData: Array<TradePair> = await fetchTradingPairs();
@@ -67,6 +65,11 @@ async function initWeb3Stuff() {
     WALLET
   );
   TradePairsContract = TradePairsFactory.attach(C.DEXALOT_TRADE_PAIRS_ADDR);
+  const OrderBooksFactory = await ethers.getContractFactory(
+    "OrderBooks",
+    WALLET
+  );
+  OrderBooksContract = OrderBooksFactory.attach(C.DEXALOT_ORDERBOOK_ADDR);
 }
 
 async function main() {
@@ -146,6 +149,10 @@ async function main() {
     WALLET
   );
   console.log("Added initial sell order");
+
+  // Get Order Book 
+  const orderBookQueryResult = await OrderBooksContract.getNBuyBook(B32(TEAM6_AVAX_PAIR.pair), 5, 5, 0, B32(""));
+  console.log(orderBookQueryResult);
 }
 
 main().catch((error) => {

@@ -4,7 +4,6 @@ import { Contract, BigNumber, Wallet, utils } from "ethers";
 import { Side, Type1, Status, TradePair } from "./types";
 import { task } from "hardhat/config";
 import C from "../src/constants";
-import { SwapParameters } from "@traderjoe-xyz/sdk";
 import _ from "lodash";
 import axios from "axios";
 import { number } from "yargs";
@@ -97,6 +96,14 @@ export async function addLimitOrder(
   TradePairContract: Contract,
   wallet: Wallet
 ) {
+  console.log("PRICE %s, QUANTITY: %s ",  utils.parseUnits(
+    price.toFixed(pair.quotedisplaydecimals),
+    pair.quote_evmdecimals
+  ),
+  utils.parseUnits(
+    amount.toFixed(pair.basedisplaydecimals),
+    pair.base_evmdecimals
+  ),)
   const tradePairB32 = utils.formatBytes32String(pair.pair);
   const addOrderTxn = await TradePairContract.addOrder(
     tradePairB32,

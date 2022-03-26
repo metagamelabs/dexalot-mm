@@ -1,12 +1,11 @@
 import { ITradePairs } from "./../typechain-types/ITradePairs";
 import { Signer } from "ethers";
 import { DexalotMM } from "./../typechain-types/DexalotMM";
-import { Side, Type1 } from "../src/types";
+import { Side, Type1, B32 } from "../src/types";
 import { expect, util } from "chai";
 import { ethers } from "hardhat";
 import C from "../src/constants";
 import { hexStripZeros } from "ethers/lib/utils";
-import JoetrollerAbi from "../contracts/abi/Joetroller.json";
 import BigNumber from "bignumber.js";
 import "@nomiclabs/hardhat-ethers";
 import {
@@ -26,7 +25,7 @@ import {
 } from "@traderjoe-xyz/sdk";
 
 describe("DexalotMM", function () {
-  it("Assert DexalotMM Functionality", async function () {
+  it("Assert DexalotMM Portfolio Deposits", async function () {
     if (!C.TEAM6_TOKEN.symbol) {
       throw Error("Need to init team6 symbol");
     }
@@ -113,25 +112,29 @@ describe("DexalotMM", function () {
         ethers.utils.parseEther("10")
       )
     );
+  });
 
-    const TEAM6AVAXTradePairFactory = await await ethers.getContractFactory(
-      "TradePairs",
+  it("Assert DexalotMM OrderBook queries", async function () {
+    if (!C.TEAM6_TOKEN.symbol) {
+      throw Error("Need to init team6 symbol");
+    }
+    const chainId = C.DEXALOT_DEV_CHAIN_ID;
+
+    const wallet = await new ethers.Wallet(
+      "8e9cdb3e5c49c5382c888772e0651cb62d89837fcddb7beb5875a2cf6e412d45",
+      await ethers.provider
+    );
+
+    const OrderBooksFactory = await ethers.getContractFactory(
+      "OrderBooks",
       wallet
     );
-    const TradePairContract = TEAM6AVAXTradePairFactory.attach(
-      "0x8664EFa775aBf51aD5b2a179E088efF5AF477c73"
-    );
-    const price = 0.1;
-    console.log(
-      "TRADE AMOUNT: ",
-      ethers.utils.parseUnits((1.0).toFixed(1), 18)
-    );
-
-    // Confirm order added
-    //   const DexOrderBooksFactory = await ethers.getContractFactory("OrderBooks", wallet);
-    //   const OrderBooksContract = DexExchangeFactory.attach(C.DEXALOT_ORDERBOOK_ADDR);
-    //   const getNOrderBooks = await OrderBooksContract.getNBuyBook()
+    let OrderBooksContract = OrderBooksFactory.attach(C.DEXALOT_ORDERBOOK_ADDR);
+    const orderBookQueryResult = await OrderBooksContract.getNBuyBook(B32("TEAM6/AVAX"), 5, 5, 0, B32(""));
+    console.log(orderBookQueryResult);
   });
+
+
   // it("Assert LiquidaterJoe Can Liquidate", async function () {
   //   // STEP 1: Initizialization
   //   const chainId: ChainId = ChainId.AVALANCHE;
