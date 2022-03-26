@@ -121,18 +121,28 @@ async function main() {
   }
 
   // Create buy order on mid price:
-  const minTradeAmount = TEAM6_AVAX_PAIR.mintrade_amnt / INIT_ARGS.midPrice;
+  const targetBuyPrice = INIT_ARGS.midPrice - INIT_ARGS.predefinedSpread;
+  const minBuyAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetBuyPrice;
   await addBuyLimitOrder(
     TEAM6_AVAX_PAIR,
-    INIT_ARGS.midPrice,
-    minTradeAmount,
+    targetBuyPrice,
+    minBuyAmount,
+    TradePairsContract,
+    WALLET
+  );
+
+  // Create Sell Order on Mid Price
+  const targetSellPrice = INIT_ARGS.midPrice + INIT_ARGS.predefinedSpread;
+  const minSellAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetSellPrice;
+  await addSellLimitOrder(
+    TEAM6_AVAX_PAIR,
+    targetSellPrice,
+    minSellAmount,
     TradePairsContract,
     WALLET
   );
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

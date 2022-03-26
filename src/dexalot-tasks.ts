@@ -25,7 +25,7 @@ export async function fetchDeploymentAbi(contractName: string) {
 
 //@ts-ignore
 async function processOrder({
-  tradeAddr,
+  traderAddr,
   pairId,
   orderId,
   price,
