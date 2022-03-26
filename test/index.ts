@@ -4,7 +4,7 @@ import { expect, util } from "chai";
 import { ethers } from "hardhat";
 import C from "../src/constants";
 import { hexStripZeros } from "ethers/lib/utils";
-import { swap } from "../src/traderjoe-tasks";
+import { swap } from "../src/dexalot-tasks";
 import JoetrollerAbi from "../contracts/abi/Joetroller.json";
 import BigNumber from "bignumber.js";
 import {
