@@ -1,18 +1,18 @@
-import { LiquidatorJoe } from "./../typechain-types/LiquidatorJoe";
+import { DexalotMM } from "./../typechain-types/DexalotMM";
 import { ethers } from "hardhat";
 import JoetrollerAbi from "../contracts/abi/Joetroller.json";
 import C from "../src/constants";
 
 async function main() {
   // Depoloy LiquidaterJoe
-  const LiquidatorJoeFactory = await ethers.getContractFactory("LiquidatorJoe");
-  const ljoe = await LiquidatorJoeFactory.deploy(C.JOETROLLER_ADDR);
+  const DexalotMMFactory = await ethers.getContractFactory("DexalotMM");
+  const ljoe = await DexalotMMFactory.deploy(C.JOETROLLER_ADDR);
 
   await ljoe.deployed();
 
   console.log("LJoe deployed to:", ljoe.address);
 
-  console.log("Deployed by: ", await LiquidatorJoeFactory.signer.getAddress());
+  console.log("Deployed by: ", await DexalotMMFactory.signer.getAddress());
 
   // doin some JoeTroller expeirment
   const JoetrollerContract = await ethers.getContractAt(

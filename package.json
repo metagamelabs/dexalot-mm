@@ -1,5 +1,5 @@
 {
-  "name": "liquidator-joe",
+  "name": "dexalot-mm",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/metagamelabs/liquidator-joe.git"
+    "url": "git+https://github.com/metagamelabs/dexalot-mm.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/metagamelabs/liquidator-joe/issues"
+    "url": "https://github.com/metagamelabs/dexalot-mm/issues"
   },
-  "homepage": "https://github.com/metagamelabs/liquidator-joe#readme",
+  "homepage": "https://github.com/metagamelabs/dexalot-mm#readme",
   "devDependencies": {
     "@typechain/ethers-v5": "^9.0.0",
     "@types/express": "^4.16.1",

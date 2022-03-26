@@ -1,4 +1,4 @@
-import { LiquidatorJoe } from "./../typechain-types/LiquidatorJoe";
+import { DexalotMM } from "./../typechain-types/DexalotMM";
 import { Signer } from "ethers";
 import { ethers } from "hardhat";
 import C from "../src/constants";

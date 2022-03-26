@@ -25,6 +25,18 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC20__factory>;
     getContractFactory(
+      name: "DexalotMM",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DexalotMM__factory>;
+    getContractFactory(
+      name: "Joetroller",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Joetroller__factory>;
+    getContractFactory(
+      name: "JToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.JToken__factory>;
+    getContractFactory(
       name: "ERC3156FlashBorrowerInterface",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC3156FlashBorrowerInterface__factory>;
@@ -61,6 +73,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.JoeRouter02__factory>;
     getContractFactory(
+      name: "DexalotMM",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DexalotMM__factory>;
+    getContractFactory(
       name: "Joetroller",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Joetroller__factory>;
@@ -68,10 +84,6 @@ declare module "hardhat/types/runtime" {
       name: "JToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.JToken__factory>;
-    getContractFactory(
-      name: "LiquidatorJoe",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.LiquidatorJoe__factory>;
 
     getContractAt(
       name: "ERC20",
@@ -88,6 +100,21 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC20>;
+    getContractAt(
+      name: "DexalotMM",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DexalotMM>;
+    getContractAt(
+      name: "Joetroller",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Joetroller>;
+    getContractAt(
+      name: "JToken",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.JToken>;
     getContractAt(
       name: "ERC3156FlashBorrowerInterface",
       address: string,
@@ -134,6 +161,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.JoeRouter02>;
     getContractAt(
+      name: "DexalotMM",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DexalotMM>;
+    getContractAt(
       name: "Joetroller",
       address: string,
       signer?: ethers.Signer
@@ -143,11 +175,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.JToken>;
-    getContractAt(
-      name: "LiquidatorJoe",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.LiquidatorJoe>;
 
     // default types
     getContractFactory(

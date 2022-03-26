@@ -1,5 +1,5 @@
 import { Signer } from "ethers";
-import { LiquidatorJoe } from "./../typechain-types/LiquidatorJoe";
+import { DexalotMM } from "./../typechain-types/DexalotMM";
 import { expect, util } from "chai";
 import { ethers } from "hardhat";
 import C from "../src/constants";
@@ -23,19 +23,19 @@ import {
   JSBI,
 } from "@traderjoe-xyz/sdk";
 
-describe("LiquidatorJoe", function () {
+describe("DexalotMM", function () {
   it("Assert LiquidaterJoe Can Liquidate", async function () {
     // STEP 1: Initizialization
     const chainId: ChainId = ChainId.AVALANCHE;
     const signer = await ethers.provider.getSigner(C.HARDHAT_SIGNER_ADDR);
-    const LiquidatorJoeFactory = await ethers.getContractFactory(
-      "LiquidatorJoe", signer
+    const DexalotMMFactory = await ethers.getContractFactory(
+      "DexalotMM", signer
     );
-    const ljoe = await LiquidatorJoeFactory.deploy(C.JOETROLLER_ADDR);
+    const ljoe = await DexalotMMFactory.deploy(C.JOETROLLER_ADDR);
     await ljoe.deployed();
     console.log(
       "Liquidator Joe deployed by: ",
-      await LiquidatorJoeFactory.signer.getAddress()
+      await DexalotMMFactory.signer.getAddress()
     );
 
     // STEP 2: Using JoeRouter, Swap AVAX into USDC.E so that we have funds to pay fees

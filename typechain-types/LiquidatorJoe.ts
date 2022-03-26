@@ -17,8 +17,8 @@ import { FunctionFragment, Result } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface LiquidatorJoeInterface extends utils.Interface {
-  contractName: "LiquidatorJoe";
+export interface DexalotMMInterface extends utils.Interface {
+  contractName: "DexalotMM";
   functions: {
     "doFlashloan(address,address,uint256,address)": FunctionFragment;
     "greet()": FunctionFragment;
@@ -60,13 +60,13 @@ export interface LiquidatorJoeInterface extends utils.Interface {
   events: {};
 }
 
-export interface LiquidatorJoe extends BaseContract {
-  contractName: "LiquidatorJoe";
+export interface DexalotMM extends BaseContract {
+  contractName: "DexalotMM";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: LiquidatorJoeInterface;
+  interface: DexalotMMInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,

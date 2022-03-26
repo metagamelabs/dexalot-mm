@@ -1,8 +1,8 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/Users/sujen/metagame-labs/liquidator-joe/node_modules/hardhat/console.sol": {
-      "lastModificationDate": 1645653102108,
+    "/Users/sujen/metagame-labs/dexalot-mm/node_modules/hardhat/console.sol": {
+      "lastModificationDate": 1648299033287,
       "contentHash": "cc4777addd464ea56fa35b1c45df0591",
       "sourceName": "hardhat/console.sol",
       "solcConfig": {
@@ -36,8 +36,8 @@
         "console"
       ]
     },
-    "/Users/sujen/metagame-labs/liquidator-joe/contracts/ERC3156FlashBorrowerInterface.sol": {
-      "lastModificationDate": 1646248214852,
+    "/Users/sujen/metagame-labs/dexalot-mm/contracts/ERC3156FlashBorrowerInterface.sol": {
+      "lastModificationDate": 1648299016495,
       "contentHash": "c8348f2b19431eb56f7bb8e36f20bcef",
       "sourceName": "contracts/ERC3156FlashBorrowerInterface.sol",
       "solcConfig": {
@@ -71,50 +71,8 @@
         "ERC3156FlashBorrowerInterface"
       ]
     },
-    "/Users/sujen/metagame-labs/liquidator-joe/contracts/LiquidatorJoe.sol": {
-      "lastModificationDate": 1647892129364,
-      "contentHash": "0bc31116b1a8f44bc33eab805fa8b55d",
-      "sourceName": "contracts/LiquidatorJoe.sol",
-      "solcConfig": {
-        "version": "0.8.0",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "hardhat/console.sol",
-        "./ERC3156FlashBorrowerInterface.sol",
-        "./ERC3156FlashLenderInterface.sol",
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "JToken",
-        "Joetroller",
-        "LiquidatorJoe"
-      ]
-    },
-    "/Users/sujen/metagame-labs/liquidator-joe/contracts/ERC3156FlashLenderInterface.sol": {
-      "lastModificationDate": 1647249182462,
+    "/Users/sujen/metagame-labs/dexalot-mm/contracts/ERC3156FlashLenderInterface.sol": {
+      "lastModificationDate": 1648299016496,
       "contentHash": "57483d708838ba1b2852fe9507fe72dd",
       "sourceName": "contracts/ERC3156FlashLenderInterface.sol",
       "solcConfig": {
@@ -150,8 +108,8 @@
         "ERC3156FlashLenderInterface"
       ]
     },
-    "/Users/sujen/metagame-labs/liquidator-joe/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
-      "lastModificationDate": 1646248066386,
+    "/Users/sujen/metagame-labs/dexalot-mm/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
+      "lastModificationDate": 1648299019647,
       "contentHash": "bab063ddd80e9cc9e313361fef7ef07f",
       "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
       "solcConfig": {
@@ -189,8 +147,8 @@
         "ERC20"
       ]
     },
-    "/Users/sujen/metagame-labs/liquidator-joe/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
-      "lastModificationDate": 1646248066394,
+    "/Users/sujen/metagame-labs/dexalot-mm/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1648299019647,
       "contentHash": "a44d1a099633876550ad2476b21bafbe",
       "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
       "solcConfig": {
@@ -224,8 +182,8 @@
         "IERC20"
       ]
     },
-    "/Users/sujen/metagame-labs/liquidator-joe/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
-      "lastModificationDate": 1646248066395,
+    "/Users/sujen/metagame-labs/dexalot-mm/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
+      "lastModificationDate": 1648299019649,
       "contentHash": "909ab67fc5c25033fe6cd364f8c056f9",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
       "solcConfig": {
@@ -261,8 +219,8 @@
         "IERC20Metadata"
       ]
     },
-    "/Users/sujen/metagame-labs/liquidator-joe/node_modules/@openzeppelin/contracts/utils/Context.sol": {
-      "lastModificationDate": 1646248066381,
+    "/Users/sujen/metagame-labs/dexalot-mm/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1648299019656,
       "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
@@ -296,7 +254,7 @@
         "Context"
       ]
     },
-    "/Users/sujen/metagame-labs/liquidator-joe/contracts/JoeRouter02.sol": {
+    "/Users/sujen/metagame-labs/dexalot-mm/contracts/JoeRouter02.sol": {
       "lastModificationDate": 1647215678397,
       "contentHash": "500a067005152cb6496a33761517db80",
       "sourceName": "contracts/JoeRouter02.sol",
@@ -347,6 +305,48 @@
         "JoeRouter02",
         "SafeMathJoe",
         "TransferHelper"
+      ]
+    },
+    "/Users/sujen/metagame-labs/dexalot-mm/contracts/DexalotMM.sol": {
+      "lastModificationDate": 1648299502064,
+      "contentHash": "27154aa7a5a78db5d1e0046ef7fad9cd",
+      "sourceName": "contracts/DexalotMM.sol",
+      "solcConfig": {
+        "version": "0.8.0",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "hardhat/console.sol",
+        "./ERC3156FlashBorrowerInterface.sol",
+        "./ERC3156FlashLenderInterface.sol",
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "DexalotMM",
+        "JToken",
+        "Joetroller"
       ]
     }
   }
