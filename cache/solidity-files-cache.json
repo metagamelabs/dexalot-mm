@@ -183,8 +183,8 @@
       ]
     },
     "/Users/sujen/metagame-labs/dexalot-mm/contracts/DexalotMM.sol": {
-      "lastModificationDate": 1648306358224,
-      "contentHash": "e0cf61c2c098a326f49874584885020b",
+      "lastModificationDate": 1648309838550,
+      "contentHash": "1d98fed3fee45827b5eb8c478586265f",
       "sourceName": "contracts/DexalotMM.sol",
       "solcConfig": {
         "version": "0.8.4",

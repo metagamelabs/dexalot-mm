@@ -7,6 +7,7 @@ import { hexStripZeros } from "ethers/lib/utils";
 import { swap } from "../src/dexalot-tasks";
 import JoetrollerAbi from "../contracts/abi/Joetroller.json";
 import BigNumber from "bignumber.js";
+import "@nomiclabs/hardhat-ethers";
 import {
   ChainId,
   Token,
@@ -27,12 +28,24 @@ describe("DexalotMM", function () {
   it ("Assert DexalotMM Functionality", async function (){
     const chainId = C.DEXALOT_DEV_CHAIN_ID;
 
-    const wallet = await new ethers.Wallet("8e9cdb3e5c49c5382c888772e0651cb62d89837fcddb7beb5875a2cf6e412d45", await ethers.getDefaultProvider());
+    const wallet = await new ethers.Wallet("8e9cdb3e5c49c5382c888772e0651cb62d89837fcddb7beb5875a2cf6e412d45",  
+      await ethers.provider);
     const DexalotMMFactory = await ethers.getContractFactory(
       "DexalotMM", wallet
     );
+    const balance = await ethers.provider.getBalance(
+     wallet.address
+    );
+
+
+    console.log(`${wallet.address} has balance ${balance.toString()}`);
     console.log("Using wallet with addrs: ", wallet.address)
-    const dexMM = await DexalotMMFactory.deploy();
+    console.log("Dexalot Factory Signr", DexalotMMFactory.interface);
+    const deploymentData = DexalotMMFactory.interface.encodeDeploy([C.DEXALOT_MM_WALLET_ADDR])
+    const estimatedGas = await ethers.provider.estimateGas({ data: deploymentData });
+    console.log("Estimated Gas: ", estimatedGas)
+    const dexMM = await DexalotMMFactory.deploy(C.DEXALOT_MM_WALLET_ADDR);
+    // const dexMM = await DexalotMMFactory.deploy({gasLimit: 100000});
     await dexMM.deployed();
     console.log(
       "Dexalot MM deployed by: ",
@@ -40,16 +53,18 @@ describe("DexalotMM", function () {
     );
 
     // Setup Portfolio contract
-    const DexPortfolioFactory = await (await ethers.getContractFactory(
-      "Portfolio", wallet
-    )).connect(wallet);
-    const DexPortfolio = DexPortfolioFactory.attach(C.DEXALOT_PORTFOLIO_ADDR);
-    const getBalanceTxn = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.TEAM6_TOKEN.address);
+    // const DexPortfolioFactory = await (await ethers.getContractFactory(
+    //   "Portfolio", wallet
+    // )).connect(wallet);
+    // console.log("CONNECTED")
+    // const DexPortfolio = DexPortfolioFactory.attach(C.DEXALOT_PORTFOLIO_ADDR);
+    // console.log("DEX CONTRACT: ",DexPortfolio)
+    // const getBalanceTxn = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.TEAM6_TOKEN.address, {gasLimit: 4446620});
 
-    // const DexPortfolio = new ethers.Contract(C.DEXALOT_PORTFOLIO_ADDR, "Portfolio", wallet)
-    // const getBalanceTxn = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.TEAM6_TOKEN.address);
+    // // const DexPortfolio = new ethers.Contract(C.DEXALOT_PORTFOLIO_ADDR, "Portfolio", wallet)
+    // // const getBalanceTxn = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.TEAM6_TOKEN.address);
 
-    console.log("Get balance result: ", getBalanceTxn)
+    // console.log("Get balance result: ", getBalanceTxn)
 
   });
   // it("Assert LiquidaterJoe Can Liquidate", async function () {

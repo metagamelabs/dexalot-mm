@@ -5,8 +5,13 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract DexalotMM {
+    /**
+     * @notice joetroller address
+     */
+    address public joetroller;
 
-    constructor() {
+    constructor(address _joetroller) {
+        joetroller = _joetroller;
     }
     string private greeting;
 
@@ -18,5 +23,5 @@ contract DexalotMM {
         console.log("Changing greeting from '%s' to '%s'", greeting, _greeting);
         greeting = _greeting;
     }
-
+    
 }

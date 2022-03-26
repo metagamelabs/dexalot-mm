@@ -20,13 +20,19 @@ export interface DexalotMMInterface extends utils.Interface {
   contractName: "DexalotMM";
   functions: {
     "greet()": FunctionFragment;
+    "joetroller()": FunctionFragment;
     "setGreeting(string)": FunctionFragment;
   };
 
   encodeFunctionData(functionFragment: "greet", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "joetroller",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "setGreeting", values: [string]): string;
 
   decodeFunctionResult(functionFragment: "greet", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "joetroller", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setGreeting",
     data: BytesLike
@@ -65,6 +71,8 @@ export interface DexalotMM extends BaseContract {
   functions: {
     greet(overrides?: CallOverrides): Promise<[string]>;
 
+    joetroller(overrides?: CallOverrides): Promise<[string]>;
+
     setGreeting(
       _greeting: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -72,6 +80,8 @@ export interface DexalotMM extends BaseContract {
   };
 
   greet(overrides?: CallOverrides): Promise<string>;
+
+  joetroller(overrides?: CallOverrides): Promise<string>;
 
   setGreeting(
     _greeting: string,
@@ -81,6 +91,8 @@ export interface DexalotMM extends BaseContract {
   callStatic: {
     greet(overrides?: CallOverrides): Promise<string>;
 
+    joetroller(overrides?: CallOverrides): Promise<string>;
+
     setGreeting(_greeting: string, overrides?: CallOverrides): Promise<void>;
   };
 
@@ -88,6 +100,8 @@ export interface DexalotMM extends BaseContract {
 
   estimateGas: {
     greet(overrides?: CallOverrides): Promise<BigNumber>;
+
+    joetroller(overrides?: CallOverrides): Promise<BigNumber>;
 
     setGreeting(
       _greeting: string,
@@ -97,6 +111,8 @@ export interface DexalotMM extends BaseContract {
 
   populateTransaction: {
     greet(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    joetroller(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     setGreeting(
       _greeting: string,
