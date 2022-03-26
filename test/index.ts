@@ -59,12 +59,28 @@ describe("DexalotMM", function () {
     const DexPortfolioFactory = await (await ethers.getContractFactory(
       "Portfolio", wallet
     )).connect(wallet);
-    console.log("CONNECTED")
     const DexPortfolio = DexPortfolioFactory.attach(C.DEXALOT_PORTFOLIO_ADDR);
-    console.log("ABOUT TO CALL getBalance()")
-    const getBalanceTxn = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, ethers.utils.formatBytes32String(C.TEAM6_TOKEN.symbol));
+    const initialTeam6Balance = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.TEAM6_TOKEN.symbolB32);
+    console.log("initial team6 balance result: ", initialTeam6Balance)
+    const initialAvaxBalance = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.NATIVE_AVAX_B32);
+    console.log("initial AVAX balance: ", initialAvaxBalance)
 
-    console.log("Get balance result: ", getBalanceTxn)
+    // Deposit 10 TEAM6
+    const depositTeam6TokensTx = await DexPortfolio.depositToken(wallet.address, C.TEAM6_TOKEN.symbolB32, ethers.utils.parseUnits("10", C.TEAM6_TOKEN.decimals));
+    await depositTeam6TokensTx.wait();
+
+    // assert deposit balance
+    const team6BalanceAfterDeposit = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.TEAM6_TOKEN.symbolB32);
+    console.log("balance result after deposit: ", team6BalanceAfterDeposit)
+    expect(team6BalanceAfterDeposit.total).equals(ethers.BigNumber.from(initialTeam6Balance.total).add(ethers.utils.parseUnits("10", C.TEAM6_TOKEN.decimals)));
+
+    // Deposit 10 AVAX
+    const depositAvaxTx = await wallet.sendTransaction({to: C.DEXALOT_PORTFOLIO_ADDR, value: ethers.utils.parseEther("10")})
+    await depositAvaxTx.wait()
+    // assert deposit balance
+    const avaxBalanceAfterDeposit = await DexPortfolio.getBalance(C.DEXALOT_MM_WALLET_ADDR, C.NATIVE_AVAX_B32);
+    console.log("avax balance result after deposit: ", avaxBalanceAfterDeposit)
+    expect(avaxBalanceAfterDeposit.total).equals(ethers.BigNumber.from(initialAvaxBalance.total).add(ethers.utils.parseEther("10")));
 
   });
   // it("Assert LiquidaterJoe Can Liquidate", async function () {

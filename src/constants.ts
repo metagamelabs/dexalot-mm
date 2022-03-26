@@ -1,4 +1,5 @@
 import { Token, ChainId } from "@traderjoe-xyz/sdk";
+import { ethers } from "ethers";
 
 export interface Jtoken {
   token: Token;
@@ -24,7 +25,9 @@ namespace C {
   export const DEXALOT_ORDERBOOK_ABI = [
   ]
 
-  export const TEAM6_TOKEN = new Token(DEXALOT_DEV_CHAIN_ID, "0x16CfA1c19Cf532112b514db1164a85ad34C3E6de", 18, "TEAM6");
+  export const TEAM6_TOKEN = {chainId: DEXALOT_DEV_CHAIN_ID, address: "0x16CfA1c19Cf532112b514db1164a85ad34C3E6de", decimals: 18, symbol: "TEAM6", symbolB32: ethers.utils.formatBytes32String("TEAM6")}
+
+  export const NATIVE_AVAX_B32 = ethers.utils.formatBytes32String("AVAX");
 
   export const HARDHAT_SIGNER_ADDR = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 
