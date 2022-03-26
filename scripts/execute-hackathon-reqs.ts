@@ -121,8 +121,10 @@ async function main() {
   }
 
   // Create buy order on mid price:
-  const targetBuyPrice = INIT_ARGS.midPrice - INIT_ARGS.predefinedSpread;
+  const targetBuyPrice = INIT_ARGS.midPrice - INIT_ARGS.predefinedSpread / 2;
   const minBuyAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetBuyPrice;
+  console.log("Target Buy Price: ", targetBuyPrice)
+  console.log("MIN BUY AMOUNT: ", minBuyAmount)
   await addBuyLimitOrder(
     TEAM6_AVAX_PAIR,
     targetBuyPrice,
@@ -131,8 +133,10 @@ async function main() {
     WALLET
   );
 
+  console.log("Added initial buy order");
+
   // Create Sell Order on Mid Price
-  const targetSellPrice = INIT_ARGS.midPrice + INIT_ARGS.predefinedSpread;
+  const targetSellPrice = INIT_ARGS.midPrice + INIT_ARGS.predefinedSpread / 2;
   const minSellAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetSellPrice;
   await addSellLimitOrder(
     TEAM6_AVAX_PAIR,
@@ -141,6 +145,7 @@ async function main() {
     TradePairsContract,
     WALLET
   );
+  console.log("Added initial sell order");
 }
 
 main().catch((error) => {
