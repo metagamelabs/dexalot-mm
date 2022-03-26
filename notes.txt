@@ -1,0 +1,11 @@
+BLOCKERS
+- not sure what the flashloan lender addr is
+
+DOING
+
+trying to remember where i left off..
+I remmber, i am trying to just put in the steps in the flash loan execution
+oOK i just confirmed the math works out... time to go back and do the flash loan steps
+
+
+
