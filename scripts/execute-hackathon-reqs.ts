@@ -38,7 +38,8 @@ function sleep(ms: number) {
 
 // init args
 const INIT_ARGS = {
-  predefinedSpread: 0.01,
+  predefinedSpreadPercentage: 10,
+  predefinedSpreadAmount: ethers.utils.parseEther("0.01"),
   midPrice: ethers.utils.parseEther("0.1"),
   clearOrderBookOnStart: false,
   minStartingAvailableBase: 20,
@@ -181,7 +182,7 @@ async function main() {
 
   const midPriceFromOrderBook = await calcMidPriceFromOnChainOrderBook(
     TEAM6_AVAX_PAIR.pair,
-    INIT_ARGS.predefinedSpread,
+    INIT_ARGS.predefinedSpreadPercentage,
     TradePairsContract,
     WALLET
   );
@@ -221,7 +222,7 @@ async function main() {
   );
   // console.log("Team 6 Available Balance: ", team6Balance.available);
   const minTeam6AvailableAmount = ethers.utils.parseUnits(
-    "20",
+    "" + INIT_ARGS.minStartingAvailableBase,
     TEAM6_AVAX_PAIR.base_evmdecimals
   );
   if (team6Balance.available.lt(minTeam6AvailableAmount)) {
@@ -242,19 +243,21 @@ async function main() {
     B32(TEAM6_AVAX_PAIR.base)
   );
   // console.log("AVAX Balance: ", avaxBalance);
-  const minAvaxAvailableAmmount = ethers.utils.parseEther("20");
-  if (avaxBalance.available.lt(minAvaxAvailableAmmount)) {
+  const minAvaxAvailableAmount = ethers.utils.parseEther("" + INIT_ARGS.minStartingAvailableQuote);
+  if (avaxBalance.available.lt(minAvaxAvailableAmount)) {
     const depositAvaxTx = await WALLET.sendTransaction({
       to: PortfolioContract.address,
-      value: minAvaxAvailableAmmount.sub(avaxBalance.available),
+      value: minAvaxAvailableAmount.sub(avaxBalance.available),
     });
     await depositAvaxTx.wait();
     console.log("Done depositing AVAX");
   }
 
   // Create buy order on mid price:
+  const spread = midPrice.div(INIT_ARGS.predefinedSpreadPercentage * 100)
+  console.log("Calculated Spread: ", spread);
   const targetBuyPrice =
-    Number(ethers.utils.formatEther(midPrice)) - INIT_ARGS.predefinedSpread / 2;
+   Number(ethers.utils.formatEther(midPrice.sub(spread.div(2))));
   const minBuyAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetBuyPrice;
   await addBuyLimitOrder(
     TEAM6_AVAX_PAIR,
@@ -268,7 +271,7 @@ async function main() {
 
   // Create Sell Order on Mid Price
   const targetSellPrice =
-    Number(ethers.utils.formatEther(midPrice)) + INIT_ARGS.predefinedSpread / 2;
+  Number(ethers.utils.formatEther(midPrice.add(spread.div(2))));
   const minSellAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetSellPrice;
   await addSellLimitOrder(
     TEAM6_AVAX_PAIR,
@@ -279,11 +282,11 @@ async function main() {
   );
   console.log("Added sell order");
 
-  console.log("Waiting 30 seconds before cancelling all of the orders...");
-  await sleep(30000);
-  console.log("Cancelling all orders");
-  await cancelAllOrders(TradePairsContract, WALLET);
-  console.log("Cancelling all orders");
+  // console.log("Waiting 30 seconds before cancelling all of the orders...");
+  // await sleep(30000);
+  // console.log("Cancelling all orders");
+  // await cancelAllOrders(TradePairsContract, WALLET);
+  // console.log("Cancelling all orders");
 
   // Outputting internal books:
   console.log("BIDS: ", BIDS);

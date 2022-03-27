@@ -148,17 +148,17 @@ export async function addLimitOrder(
   TradePairContract: Contract,
   wallet: Wallet
 ) {
-  // console.log(
-  //   "PRICE %s, QUANTITY: %s ",
-  //   utils.parseUnits(
-  //     price.toFixed(pair.quotedisplaydecimals),
-  //     pair.quote_evmdecimals
-  //   ),
-  //   utils.parseUnits(
-  //     amount.toFixed(pair.basedisplaydecimals),
-  //     pair.base_evmdecimals
-  //   )
-  // );
+  console.log(
+    "PRICE %s, QUANTITY: %s ",
+    utils.parseUnits(
+      price.toFixed(pair.quotedisplaydecimals),
+      pair.quote_evmdecimals
+    ),
+    utils.parseUnits(
+      amount.toFixed(pair.basedisplaydecimals),
+      pair.base_evmdecimals
+    )
+  );
   const tradePairB32 = utils.formatBytes32String(pair.pair);
   const addOrderTxn = await TradePairContract.addOrder(
     tradePairB32,
@@ -228,7 +228,7 @@ export async function cancelAllOrders(
 
 export async function calcMidPriceFromOnChainOrderBook(
   pair: string,
-  spread: number,
+  spreadPercentage: number,
   TradePairsContract: Contract,
   wallet: Wallet
 ) {
@@ -255,9 +255,11 @@ export async function calcMidPriceFromOnChainOrderBook(
     // If we have stuff on both order books, we find the midpoint
     midPrice = highestBuy.add(lowestSell).div(2);
   } else if (highestBuy.gt(0)) {
-    midPrice = highestBuy.add(spread / 2);
+    const spread = highestBuy.div(spreadPercentage * 100);
+    midPrice = highestBuy.add(spread.div(2));
   } else if (lowestSell.gt(0)) {
-    midPrice = lowestSell.sub(spread / 2);
+    const spread = lowestSell.div(spreadPercentage * 100);
+    midPrice = lowestSell.sub(spread.div(2));
   } else {
     return null;
   }

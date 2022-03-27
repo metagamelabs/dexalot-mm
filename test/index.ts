@@ -33,7 +33,7 @@ import {
 } from "@traderjoe-xyz/sdk";
 
 const INIT_ARGS = {
-  predefinedSpread: 0.01,
+  predefinedSpreadFactor: 0.01,
   midPrice: 0.1,
   clearOrderBookOnStart: false,
   minStartingAvailableBase: 20,
@@ -202,7 +202,7 @@ describe("DexalotMM", function () {
 
     // Add some orders
     // Create buy order on mid price:
-    const targetBuyPrice = INIT_ARGS.midPrice - INIT_ARGS.predefinedSpread / 2;
+    const targetBuyPrice = INIT_ARGS.midPrice - 0.01 / 2;
     const minBuyAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetBuyPrice;
     console.log("Target Buy Price: ", targetBuyPrice);
     console.log("MIN BUY AMOUNT: ", minBuyAmount);
@@ -217,7 +217,7 @@ describe("DexalotMM", function () {
     console.log("Added initial buy order");
 
     // Create Sell Order on Mid Price
-    const targetSellPrice = INIT_ARGS.midPrice + INIT_ARGS.predefinedSpread / 2;
+    const targetSellPrice = INIT_ARGS.midPrice + 0.01 / 2;
     const minSellAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetSellPrice;
     await addSellLimitOrder(
       TEAM6_AVAX_PAIR,
