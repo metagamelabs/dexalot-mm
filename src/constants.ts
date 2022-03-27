@@ -6,6 +6,14 @@ export interface Jtoken {
   DELEGATOR_ADDR: string;
 }
 namespace C {
+  export const INIT_ARGS = {
+    predefinedSpreadAmount: ethers.utils.parseEther("0.001"),
+    midPrice: ethers.utils.parseEther("0.1"),
+    clearOrderBookOnStart: false,
+    minStartingAvailableBase: 20,
+    minStartingAvailableQuote: 20,
+  };
+
   export const DEXALOT_DEV_CHAIN_ID = 43112;
 
   export const DEXALOT_ORDERBOOK_ADDR =

@@ -35,7 +35,9 @@ export function fromRestOrder(orderFromRestApi: any) {
   order.price = ethers.utils.parseEther(orderFromRestApi.price);
   order.quantity = ethers.utils.parseEther(orderFromRestApi.quantity);
   order.totalamount = ethers.utils.parseEther(orderFromRestApi.totalamount);
-  order.quantityfilled = ethers.utils.parseEther(orderFromRestApi.quantityfilled);
+  order.quantityfilled = ethers.utils.parseEther(
+    orderFromRestApi.quantityfilled
+  );
   order.totalfee = ethers.utils.parseEther(orderFromRestApi.totalfee);
 
   return order;

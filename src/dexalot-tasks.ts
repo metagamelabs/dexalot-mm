@@ -40,8 +40,28 @@ export async function fetchOrderBookData(traderaddress: string, pair: string) {
 
 export async function printMyOrders() {
   console.log(chalk.yellow.bold("My Orders:"));
-  BIDS.forEach((x: Order) => console.log(chalk.green(`\tBID: price=${ethers.utils.formatEther(x.price)} quantity=${ethers.utils.formatEther(x.quantity)} filled=${ethers.utils.formatEther(x.quantityfilled)}`)))
-  ASKS.forEach((x: Order) => console.log(chalk.red(`\tASK: price=${ethers.utils.formatEther(x.price)} quantity=${ethers.utils.formatEther(x.quantity)} filled=${ethers.utils.formatEther(x.quantityfilled)}`)))
+  BIDS.forEach((x: Order) =>
+    console.log(
+      chalk.green(
+        `\tBID: price=${ethers.utils.formatEther(
+          x.price
+        )} quantity=${ethers.utils.formatEther(
+          x.quantity
+        )} filled=${ethers.utils.formatEther(x.quantityfilled)}`
+      )
+    )
+  );
+  ASKS.forEach((x: Order) =>
+    console.log(
+      chalk.red(
+        `\tASK: price=${ethers.utils.formatEther(
+          x.price
+        )} quantity=${ethers.utils.formatEther(
+          x.quantity
+        )} filled=${ethers.utils.formatEther(x.quantityfilled)}`
+      )
+    )
+  );
 }
 
 //@ts-ignore
@@ -89,11 +109,9 @@ export async function processOrder({
     if (orderStatus == Status.CANCELED) {
       // Remove it from the internal array
       if (side == Side.BUY) {
-        BIDS = _.filter(BIDS, 
-          (x) => x.id != orderId);
+        BIDS = _.filter(BIDS, (x) => x.id != orderId);
       } else {
-        ASKS = _.filter(ASKS, 
-          (x) => x.id != orderId);
+        ASKS = _.filter(ASKS, (x) => x.id != orderId);
       }
       printMyOrders();
       return;
@@ -103,33 +121,24 @@ export async function processOrder({
       existingOrderObject.quantityfilled = quantityFilled;
       existingOrderObject.totalfee = totalFee;
       existingOrderObject.update_ts = new Date().toISOString();
-      console.log(
-        "Updated Order(id=%s)",
-        orderId
-      );
+      console.log("Updated Order(id=%s)", orderId);
       printMyOrders();
       return;
-    } 
+    }
 
     if (orderStatus == Status.FILLED) {
       // Remove from OrderBook
       if (side == Side.BUY) {
-        BIDS = _.filter(BIDS, 
-          (x) => x.id != orderId);
+        BIDS = _.filter(BIDS, (x) => x.id != orderId);
       } else {
-        ASKS = _.filter(ASKS, 
-          (x) => x.id != orderId);
+        ASKS = _.filter(ASKS, (x) => x.id != orderId);
       }
-      console.log(
-        "Removed Filled Order(id=%s)",
-        orderId
-      );
+      console.log("Removed Filled Order(id=%s)", orderId);
       printMyOrders();
       return;
     }
 
     console.log("Unhandled order status: ", orderStatus);
-
   } else if (orderStatus == Status.CANCELED) {
     // already removed it, skip.
   } else {
