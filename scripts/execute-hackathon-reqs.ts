@@ -250,9 +250,7 @@ async function main() {
     console.log("\tOrders cancelled!");
     console.log("\tWaiting 20 seconds before adding BUY and SELL orders: ");
     await sleep(20000);
-    // setTimeout(function(){
-    //   console.log("Running 'enter a new set of buy & sell orders with different prices based on the changing mid/last price'");
-    // }, 20000);
+    // The code will add the BUY and SELL order below
   }
 
   // Add funds if needed
