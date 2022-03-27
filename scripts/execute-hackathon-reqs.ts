@@ -1,12 +1,13 @@
-import { OrderBooks } from "./../typechain-types/OrderBooks";
+import { OrderBooks } from './../typechain-types/OrderBooks';
 import { DexalotMM } from "../typechain-types/DexalotMM";
 import { ethers } from "hardhat";
-import { TradePair, B32 } from "../src/types";
+import { TradePair, B32, Order, Side, fromRestOrder } from "../src/types";
 import JoetrollerAbi from "../contracts/abi/Joetroller.json";
 import {
   fetchTradingPairs,
   fetchDeploymentAbi,
   addBuyLimitOrder,
+  fetchOrderBookData,
   addSellLimitOrder,
 } from "../src/dexalot-tasks";
 import _ from "lodash";
@@ -33,6 +34,8 @@ let TradePairsContract: Contract;
 let OrderBooksContract: Contract;
 
 // orderbook state
+let BIDS: Array<Order> = [];
+let ASKS: Array<Order> = [];
 
 async function initData() {
   const tradingPairsData: Array<TradePair> = await fetchTradingPairs();
@@ -43,6 +46,14 @@ async function initData() {
   team6AvaxPair.mintrade_amnt = Number(team6AvaxPair.mintrade_amnt);
   team6AvaxPair.maxtrade_amnt = Number(team6AvaxPair.maxtrade_amnt);
   TEAM6_AVAX_PAIR = team6AvaxPair;
+
+  const orderBookQueryResult = await fetchOrderBookData(
+      C.DEXALOT_MM_WALLET_ADDR,
+      "TEAM6/AVAX"
+    );
+
+  BIDS = orderBookQueryResult.rows.filter((x: Order) => x.side == Side.BUY).map((x: any) => fromRestOrder(x));
+  ASKS = orderBookQueryResult.rows.filter((x: Order) => x.side == Side.SELL).map((x: any) => fromRestOrder(x));
 }
 
 async function initWeb3Stuff() {
@@ -77,6 +88,8 @@ async function main() {
   await initData();
 
   console.log("Initialized Trading Pair Data: ", TEAM6_AVAX_PAIR);
+  console.log("INIT BIDS: ", BIDS);
+  console.log("INIT ASKS: ", ASKS);
 
   // ethers.js init stuff
   await initWeb3Stuff();
@@ -86,6 +99,7 @@ async function main() {
   console.log("Initial Confnig: ", INIT_ARGS);
 
   // Check OrderBook and CANCEL orders if necessary
+
 
   // Add funds if needed
   const team6Balance = await PortfolioContract.getBalance(
@@ -128,8 +142,8 @@ async function main() {
   // Create buy order on mid price:
   const targetBuyPrice = INIT_ARGS.midPrice - INIT_ARGS.predefinedSpread / 2;
   const minBuyAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetBuyPrice;
-  console.log("Target Buy Price: ", targetBuyPrice);
-  console.log("MIN BUY AMOUNT: ", minBuyAmount);
+  console.log("Target Buy Price: ", targetBuyPrice)
+  console.log("MIN BUY AMOUNT: ", minBuyAmount)
   await addBuyLimitOrder(
     TEAM6_AVAX_PAIR,
     targetBuyPrice,
@@ -152,15 +166,10 @@ async function main() {
   );
   console.log("Added initial sell order");
 
-  // Get Order Book
-  const orderBookQueryResult = await TradePairsContract.getNBuyBook(
-    B32(TEAM6_AVAX_PAIR.pair),
-    5,
-    5,
-    0,
-    B32("")
-  );
+  // Get Order Book 
+  const orderBookQueryResult = await TradePairsContract.getNBuyBook(B32(TEAM6_AVAX_PAIR.pair), 5, 5, 0, B32(""));
   console.log(orderBookQueryResult);
+  console.log(initData);
 }
 
 main().catch((error) => {

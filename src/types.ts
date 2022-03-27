@@ -13,6 +13,33 @@ export interface TradePair {
   maxtrade_amnt: number;
 }
 
+export interface Order {
+  id: string,
+  traderaddress: string,
+  tx: string,
+  pair: string,
+  type: Type1,
+  side: Side,
+  price: number,
+  quantity: number,
+  totalamount: number,
+  ts: string,
+  quantityfilled: number,
+  totalfee: number,
+  update_ts: number
+}
+
+export function fromRestOrder(orderFromRestApi: any) {
+  const order: Order = orderFromRestApi;
+  order.price = Number(order.price);
+  order.quantity = Number(order.quantity);
+  order.totalamount = Number(order.totalamount);
+  order.quantityfilled = Number(order.quantityfilled);
+  order.totalfee = Number(order.totalfee);
+
+  return order;
+}
+
 export enum Side {
   BUY,
   SELL,
