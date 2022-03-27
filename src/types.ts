@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, BigNumber } from "ethers";
 export interface TradePair {
   pair: string;
   base: string;
@@ -21,22 +21,22 @@ export interface Order {
   type: Type1;
   side: Side;
   status: Status;
-  price: string;
-  quantity: string;
-  totalamount: string;
+  price: BigNumber;
+  quantity: BigNumber;
+  totalamount: BigNumber;
   ts: string;
-  quantityfilled: string;
-  totalfee: string;
+  quantityfilled: BigNumber;
+  totalfee: BigNumber;
   update_ts?: string;
 }
 
 export function fromRestOrder(orderFromRestApi: any) {
   const order: Order = orderFromRestApi;
-  // order.price = Number(order.price);
-  // order.quantity = Number(order.quantity);
-  // order.totalamount = Number(order.totalamount);
-  // order.quantityfilled = Number(order.quantityfilled);
-  // order.totalfee = Number(order.totalfee);
+  order.price = ethers.utils.parseEther(orderFromRestApi.price);
+  order.quantity = ethers.utils.parseEther(orderFromRestApi.quantity);
+  order.totalamount = ethers.utils.parseEther(orderFromRestApi.totalamount);
+  order.quantityfilled = ethers.utils.parseEther(orderFromRestApi.quantityfilled);
+  order.totalfee = ethers.utils.parseEther(orderFromRestApi.totalfee);
 
   return order;
 }

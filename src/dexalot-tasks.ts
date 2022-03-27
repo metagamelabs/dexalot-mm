@@ -8,6 +8,8 @@ import C from "../src/constants";
 import _ from "lodash";
 import axios from "axios";
 import { number } from "yargs";
+import chalk from "chalk";
+import e from "express";
 
 export let BIDS: Array<Order> = [];
 export let ASKS: Array<Order> = [];
@@ -36,8 +38,14 @@ export async function fetchOrderBookData(traderaddress: string, pair: string) {
   return result.data;
 }
 
+export async function printMyOrders() {
+  console.log(chalk.yellow.bold("My Orders:"));
+  BIDS.forEach((x: Order) => console.log(chalk.green(`\tBID: price=${ethers.utils.formatEther(x.price)} quantity=${ethers.utils.formatEther(x.quantity)} filled=${ethers.utils.formatEther(x.quantityfilled)}`)))
+  ASKS.forEach((x: Order) => console.log(chalk.red(`\tASK: price=${ethers.utils.formatEther(x.price)} quantity=${ethers.utils.formatEther(x.quantity)} filled=${ethers.utils.formatEther(x.quantityfilled)}`)))
+}
+
 //@ts-ignore
-async function processOrder({
+export async function processOrder({
   traderAddr,
   pairId,
   orderId,
@@ -62,10 +70,10 @@ async function processOrder({
   quantityFilled: BigNumber;
   totalFee: BigNumber;
 }) {
-  console.log("Processing order: ", arguments);
-  console.log("Order Status: ", Status[orderStatus]);
-  console.log("Type1: ", Type1[type1]);
-  console.log("Side: ", Side[side]);
+  // console.log("Processing order: ", arguments);
+  // console.log("Order Status: ", Status[orderStatus]);
+  // console.log("Type1: ", Type1[type1]);
+  // console.log("Side: ", Side[side]);
 
   // See if it already exists in the map
   const existingOrderObject = _.find(
@@ -73,10 +81,57 @@ async function processOrder({
     (x) => x.id == orderId
   );
   if (existingOrderObject) {
-    console.log(
-      "We have an existing order(id=%s), we will update it.",
-      orderId
-    );
+    if (orderStatus == Status.NEW) {
+      // Duplicate order process, skip.
+      return;
+    }
+
+    if (orderStatus == Status.CANCELED) {
+      // Remove it from the internal array
+      if (side == Side.BUY) {
+        BIDS = _.filter(BIDS, 
+          (x) => x.id != orderId);
+      } else {
+        ASKS = _.filter(ASKS, 
+          (x) => x.id != orderId);
+      }
+      printMyOrders();
+      return;
+    }
+
+    if (orderStatus == Status.PARTIAL) {
+      existingOrderObject.quantityfilled = quantityFilled;
+      existingOrderObject.totalfee = totalFee;
+      existingOrderObject.update_ts = new Date().toISOString();
+      console.log(
+        "Updated Order(id=%s)",
+        orderId
+      );
+      printMyOrders();
+      return;
+    } 
+
+    if (orderStatus == Status.FILLED) {
+      // Remove from OrderBook
+      if (side == Side.BUY) {
+        BIDS = _.filter(BIDS, 
+          (x) => x.id != orderId);
+      } else {
+        ASKS = _.filter(ASKS, 
+          (x) => x.id != orderId);
+      }
+      console.log(
+        "Removed Filled Order(id=%s)",
+        orderId
+      );
+      printMyOrders();
+      return;
+    }
+
+    console.log("Unhandled order status: ", orderStatus);
+
+  } else if (orderStatus == Status.CANCELED) {
+    // already removed it, skip.
   } else {
     console.log("Inserting new order into internal array: ", orderId);
     const orderObj: Order = {
@@ -87,14 +142,12 @@ async function processOrder({
       type: type1,
       status: orderStatus,
       side: side,
-      price: ethers.utils.formatEther(price.toString()).toString(),
-      quantity: ethers.utils.formatEther(quantity.toString()).toString(),
-      totalamount: ethers.utils.formatEther(totalAmount.toString()).toString(),
+      price: price,
+      quantity: quantity,
+      totalamount: totalAmount,
       ts: new Date().toISOString(),
-      quantityfilled: ethers.utils
-        .formatEther(quantityFilled.toString())
-        .toString(),
-      totalfee: ethers.utils.formatEther(totalFee.toString()).toString(),
+      quantityfilled: quantityFilled,
+      totalfee: totalFee,
     };
     if (side == Side.BUY) {
       BIDS.push(orderObj);
@@ -103,6 +156,7 @@ async function processOrder({
       ASKS.push(orderObj);
       ASKS = _.sortBy(ASKS, ["price", "ts"], ["asc", "desc"]);
     }
+    printMyOrders();
   }
 }
 
@@ -148,17 +202,17 @@ export async function addLimitOrder(
   TradePairContract: Contract,
   wallet: Wallet
 ) {
-  console.log(
-    "PRICE %s, QUANTITY: %s ",
-    utils.parseUnits(
-      price.toFixed(pair.quotedisplaydecimals),
-      pair.quote_evmdecimals
-    ),
-    utils.parseUnits(
-      amount.toFixed(pair.basedisplaydecimals),
-      pair.base_evmdecimals
-    )
-  );
+  // console.log(
+  //   "PRICE %s, QUANTITY: %s ",
+  //   utils.parseUnits(
+  //     price.toFixed(pair.quotedisplaydecimals),
+  //     pair.quote_evmdecimals
+  //   ),
+  //   utils.parseUnits(
+  //     amount.toFixed(pair.basedisplaydecimals),
+  //     pair.base_evmdecimals
+  //   )
+  // );
   const tradePairB32 = utils.formatBytes32String(pair.pair);
   const addOrderTxn = await TradePairContract.addOrder(
     tradePairB32,
@@ -228,7 +282,7 @@ export async function cancelAllOrders(
 
 export async function calcMidPriceFromOnChainOrderBook(
   pair: string,
-  spreadPercentage: number,
+  spreadAmount: BigNumber,
   TradePairsContract: Contract,
   wallet: Wallet
 ) {
@@ -255,11 +309,9 @@ export async function calcMidPriceFromOnChainOrderBook(
     // If we have stuff on both order books, we find the midpoint
     midPrice = highestBuy.add(lowestSell).div(2);
   } else if (highestBuy.gt(0)) {
-    const spread = highestBuy.div(spreadPercentage * 100);
-    midPrice = highestBuy.add(spread.div(2));
+    midPrice = highestBuy.add(spreadAmount.div(2));
   } else if (lowestSell.gt(0)) {
-    const spread = lowestSell.div(spreadPercentage * 100);
-    midPrice = lowestSell.sub(spread.div(2));
+    midPrice = lowestSell.sub(spreadAmount.div(2));
   } else {
     return null;
   }

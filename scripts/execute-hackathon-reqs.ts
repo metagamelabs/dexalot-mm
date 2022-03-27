@@ -1,3 +1,4 @@
+import { OrderStatusChangedEvent, OrderStatusChangedEventFilter } from './../typechain-types/TradePairs';
 import { OrderBooks } from "./../typechain-types/OrderBooks";
 import { DexalotMM } from "../typechain-types/DexalotMM";
 import { ethers } from "hardhat";
@@ -23,12 +24,14 @@ import {
   setInternalBidsArray,
   cancelAllOrders,
   calcMidPriceFromOnChainOrderBook,
+  processOrder,
+  printMyOrders
 } from "../src/dexalot-tasks";
 import _ from "lodash";
 import C from "../src/constants";
 import { Contract, Wallet, BigNumber } from "ethers";
 import { skipPartiallyEmittedExpressions } from "typescript";
-import { ROCKET_SUBGRAPH } from "@traderjoe-xyz/sdk";
+import { ROCKET_SUBGRAPH, Trade } from "@traderjoe-xyz/sdk";
 
 function sleep(ms: number) {
   return new Promise((resolve) => {
@@ -39,7 +42,7 @@ function sleep(ms: number) {
 // init args
 const INIT_ARGS = {
   predefinedSpreadPercentage: 10,
-  predefinedSpreadAmount: ethers.utils.parseEther("0.01"),
+  predefinedSpreadAmount: ethers.utils.parseEther("0.001"),
   midPrice: ethers.utils.parseEther("0.1"),
   clearOrderBookOnStart: false,
   minStartingAvailableBase: 20,
@@ -66,9 +69,10 @@ async function initData() {
   team6AvaxPair.maxtrade_amnt = Number(team6AvaxPair.maxtrade_amnt);
   TEAM6_AVAX_PAIR = team6AvaxPair;
 
+  console.log("Getting existing orders using REST API");
   const orderBookQueryResult = await fetchOrderBookData(
     C.DEXALOT_MM_WALLET_ADDR,
-    "TEAM6/AVAX"
+    TEAM6_AVAX_PAIR.pair
   );
 
   setInternalBidsArray(
@@ -81,6 +85,7 @@ async function initData() {
       .filter((x: Order) => x.side == Side.SELL)
       .map((x: any) => fromRestOrder(x))
   );
+  printMyOrders();
 }
 
 async function initWeb3Stuff() {
@@ -114,13 +119,15 @@ async function initWeb3Stuff() {
     address: C.DEXALOT_TRADE_PAIRS_ADDR,
     topics: [
       ethers.utils.id(
-        "OrderStatusChanged(address,bytes32,bytes32,uint,uint,uint,Side,Type1,Status,uint,uint)"
+        "OrderStatusChanged(address,bytes32,bytes32,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)"
       ),
     ],
   };
 
-  ethers.provider.on(
-    orderStatusChangedFilter,
+  // const filterOSC = TradePairsContract.filters.OrderStatusChangedEvent(WALLET.address, TEAM6_AVAX_PAIR.pair)
+
+  TradePairsContract.on(
+   "OrderStatusChanged",
     async (
       traderAddress: string,
       pairB32: string,
@@ -134,13 +141,27 @@ async function initWeb3Stuff() {
       quantityfilled: number,
       totalfee: number
     ) => {
-      console.log("Got Event orderStatusChanged");
+      if (traderAddress == WALLET.address && pairB32 == B32(TEAM6_AVAX_PAIR.pair)) {
+        processOrder({
+              traderAddr: traderAddress,
+              pairId: ethers.utils.parseBytes32String(pairB32),
+              orderId: id,
+              price: BigNumber.from(price),
+              totalAmount: BigNumber.from(totalamount),
+              quantity: BigNumber.from(quantity),
+              side: side,
+              type1: type1,
+              orderStatus: orderStatus,
+              quantityFilled: BigNumber.from(quantityfilled),
+              totalFee: BigNumber.from(totalfee),
+        });
+      }
     }
   );
 
   // Subscribe to Executed
   const executedFilter = {
-    address: C.DEXALOT_TRADE_PAIRS_ADDR,
+    // address: C.DEXALOT_TRADE_PAIRS_ADDR,
     topics: [
       ethers.utils.id(
         "Executed(bytes32,uint,uint,bytes32,bytes32,uint,uint,bool,uint)"
@@ -149,7 +170,7 @@ async function initWeb3Stuff() {
   };
 
   ethers.provider.on(
-    executedFilter,
+    "Executed",
     async (
       pairB32: string,
       price: number,
@@ -169,20 +190,18 @@ async function main() {
   // Query market data
   await initData();
 
-  console.log("Initialized Trading Pair Data: ", TEAM6_AVAX_PAIR);
-  console.log("INIT BIDS: ", BIDS);
-  console.log("INIT ASKS: ", ASKS);
+  // console.log("Initialized Trading Pair Data: ", TEAM6_AVAX_PAIR);
 
   // ethers.js init stuff
   await initWeb3Stuff();
-  console.log("Initialized web 3 stuff");
+  // console.log("Initialized web 3 stuff");
 
   // initial configuration:
-  console.log("Initial Config: ", INIT_ARGS);
+  // console.log("Initial Config: ", INIT_ARGS);
 
   const midPriceFromOrderBook = await calcMidPriceFromOnChainOrderBook(
     TEAM6_AVAX_PAIR.pair,
-    INIT_ARGS.predefinedSpreadPercentage,
+    INIT_ARGS.predefinedSpreadAmount,
     TradePairsContract,
     WALLET
   );
@@ -254,10 +273,8 @@ async function main() {
   }
 
   // Create buy order on mid price:
-  const spread = midPrice.div(INIT_ARGS.predefinedSpreadPercentage * 100)
-  console.log("Calculated Spread: ", spread);
   const targetBuyPrice =
-   Number(ethers.utils.formatEther(midPrice.sub(spread.div(2))));
+   Number(ethers.utils.formatEther(midPrice.sub(INIT_ARGS.predefinedSpreadAmount.div(2))));
   const minBuyAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetBuyPrice;
   await addBuyLimitOrder(
     TEAM6_AVAX_PAIR,
@@ -271,7 +288,7 @@ async function main() {
 
   // Create Sell Order on Mid Price
   const targetSellPrice =
-  Number(ethers.utils.formatEther(midPrice.add(spread.div(2))));
+   Number(ethers.utils.formatEther(midPrice.add(INIT_ARGS.predefinedSpreadAmount.div(2))));
   const minSellAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetSellPrice;
   await addSellLimitOrder(
     TEAM6_AVAX_PAIR,
@@ -287,10 +304,6 @@ async function main() {
   // console.log("Cancelling all orders");
   // await cancelAllOrders(TradePairsContract, WALLET);
   // console.log("Cancelling all orders");
-
-  // Outputting internal books:
-  console.log("BIDS: ", BIDS);
-  console.log("ASKS: ", ASKS);
 
   console.log("Going into while(1) loop...");
 }
