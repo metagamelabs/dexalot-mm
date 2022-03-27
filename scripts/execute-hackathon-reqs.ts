@@ -1,7 +1,15 @@
 import { OrderBooks } from "./../typechain-types/OrderBooks";
 import { DexalotMM } from "../typechain-types/DexalotMM";
 import { ethers } from "hardhat";
-import { TradePair, B32, Order, Side, fromRestOrder } from "../src/types";
+import {
+  TradePair,
+  B32,
+  Order,
+  Side,
+  fromRestOrder,
+  Type1,
+  Status,
+} from "../src/types";
 import JoetrollerAbi from "../contracts/abi/Joetroller.json";
 import {
   fetchTradingPairs,
@@ -77,7 +85,7 @@ async function initData() {
 async function initWeb3Stuff() {
   WALLET = await new ethers.Wallet(
     "8e9cdb3e5c49c5382c888772e0651cb62d89837fcddb7beb5875a2cf6e412d45",
-    await ethers.provider
+    ethers.provider
   );
   const DexPortfolioFactory = await ethers.getContractFactory(
     "Portfolio",
@@ -99,6 +107,61 @@ async function initWeb3Stuff() {
     WALLET
   );
   OrderBooksContract = OrderBooksFactory.attach(C.DEXALOT_ORDERBOOK_ADDR);
+
+  // Subscribe to OrderStatusChanged
+  const orderStatusChangedFilter = {
+    address: C.DEXALOT_TRADE_PAIRS_ADDR,
+    topics: [
+      ethers.utils.id(
+        "OrderStatusChanged(address,bytes32,bytes32,uint,uint,uint,Side,Type1,Status,uint,uint)"
+      ),
+    ],
+  };
+
+  ethers.provider.on(
+    orderStatusChangedFilter,
+    async (
+      traderAddress: string,
+      pairB32: string,
+      id: string,
+      price: number,
+      totalamount: number,
+      quantity: number,
+      side: Side,
+      type1: Type1,
+      orderStatus: Status,
+      quantityfilled: number,
+      totalfee: number
+    ) => {
+      console.log("Got Event orderStatusChanged");
+    }
+  );
+
+  // Subscribe to Executed
+  const executedFilter = {
+    address: C.DEXALOT_TRADE_PAIRS_ADDR,
+    topics: [
+      ethers.utils.id(
+        "Executed(bytes32,uint,uint,bytes32,bytes32,uint,uint,bool,uint)"
+      ),
+    ],
+  };
+
+  ethers.provider.on(
+    executedFilter,
+    async (
+      pairB32: string,
+      price: number,
+      quantity: number,
+      makerB32: string,
+      takerB32: string,
+      feeMaker: number,
+      feeMakerBase: boolean,
+      execId: number
+    ) => {
+      console.log("Got Event: Executed");
+    }
+  );
 }
 
 async function main() {
