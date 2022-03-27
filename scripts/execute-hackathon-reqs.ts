@@ -14,6 +14,7 @@ import {
   setInternalAsksArray,
   setInternalBidsArray,
   cancelAllOrders,
+  calcMidPriceFromOnChainOrderBook,
 } from "../src/dexalot-tasks";
 import _ from "lodash";
 import C from "../src/constants";
@@ -30,7 +31,7 @@ function sleep(ms: number) {
 // init args
 const INIT_ARGS = {
   predefinedSpread: 0.01,
-  midPrice: 0.1,
+  midPrice: ethers.utils.parseEther("0.1"),
   clearOrderBookOnStart: false,
   minStartingAvailableBase: 20,
   minStartingAvailableQuote: 20,
@@ -113,62 +114,49 @@ async function main() {
   console.log("Initialized web 3 stuff");
 
   // initial configuration:
-  console.log("Initial Confnig: ", INIT_ARGS);
+  console.log("Initial Config: ", INIT_ARGS);
 
-  console.log("Determining mid price from on chain orderbook");
-  const buyOrderBookQueryResult = await TradePairsContract.getNBuyBook(
-    B32(TEAM6_AVAX_PAIR.pair),
-    1,
-    1,
-    0,
-    B32("")
+  const midPriceFromOrderBook = await calcMidPriceFromOnChainOrderBook(
+    TEAM6_AVAX_PAIR.pair,
+    INIT_ARGS.predefinedSpread,
+    TradePairsContract,
+    WALLET
   );
-  console.log("BUY ORDER BOOK: ", buyOrderBookQueryResult);
-  const highestBuy = buyOrderBookQueryResult[0][0];
-
-  const sellOrderBookQueryResult = await TradePairsContract.getNSellBook(
-    B32(TEAM6_AVAX_PAIR.pair),
-    1,
-    1,
-    0,
-    B32("")
-  );
-  console.log("SELL ORDER BOOK: ", sellOrderBookQueryResult);
-  const lowestSell = sellOrderBookQueryResult[0][0];
-
-  let midPrice: BigNumber;
-  if (highestBuy.gt(0) && lowestSell.gt(0)) {
-    // If we have stuff on both order books, we find the midpoint
-    midPrice = highestBuy.add(lowestSell).div(2).toString();
-  } else if (highestBuy.gt(0)) {
-    midPrice = highestBuy.add(INIT_ARGS.predefinedSpread / 2);
-  } else if (lowestSell.gt(0)) {
-    midPrice = lowestSell.sub(INIT_ARGS.predefinedSpread / 2);
-  } else {
-    midPrice = ethers.utils.parseEther(INIT_ARGS.midPrice.toString());
-  }
+  const midPrice: BigNumber =
+    midPriceFromOrderBook && midPriceFromOrderBook.gt(0)
+      ? midPriceFromOrderBook
+      : INIT_ARGS.midPrice;
   console.log(
-    "Calculated Mid Price: %s, (%s)",
+    "Determined Mid Price: %s, (%s)",
     midPrice,
     ethers.utils.formatEther(midPrice.toString())
   );
 
   // Check OrderBook and CANCEL orders if necessary
-  // if (BIDS.length > 0 || ASKS.length > 0) {
-  //   console.log("We have %s BUY and %s SELL existing orders", BIDS.length, ASKS.length);
-  //   console.log("Cancelling all orders after 10 seconds")
-  //   await sleep(10000);
-  //   console.log("Cancelling orders...")
-  //   await cancelAllOrders(TradePairsContract, WALLET);
-  //   console.log("Orders cancelled!")
-  // }
+  if (BIDS.length > 0 || ASKS.length > 0) {
+    console.log(
+      "We have %s BUY and %s SELL existing orders",
+      BIDS.length,
+      ASKS.length
+    );
+    console.log("\tCancelling all orders after 10 seconds");
+    await sleep(10000);
+    console.log("\tCancelling orders...");
+    await cancelAllOrders(TradePairsContract, WALLET);
+    console.log("\tOrders cancelled!");
+    console.log("\tWaiting 20 seconds before adding BUY and SELL orders: ");
+    await sleep(20000);
+    // setTimeout(function(){
+    //   console.log("Running 'enter a new set of buy & sell orders with different prices based on the changing mid/last price'");
+    // }, 20000);
+  }
 
   // Add funds if needed
   const team6Balance = await PortfolioContract.getBalance(
     WALLET.address,
     B32(TEAM6_AVAX_PAIR.quote)
   );
-  console.log("Team 6 Available Balance: ", team6Balance.available);
+  // console.log("Team 6 Available Balance: ", team6Balance.available);
   const minTeam6AvailableAmount = ethers.utils.parseUnits(
     "20",
     TEAM6_AVAX_PAIR.base_evmdecimals
@@ -190,7 +178,7 @@ async function main() {
     WALLET.address,
     B32(TEAM6_AVAX_PAIR.base)
   );
-  console.log("AVAX Balance: ", avaxBalance);
+  // console.log("AVAX Balance: ", avaxBalance);
   const minAvaxAvailableAmmount = ethers.utils.parseEther("20");
   if (avaxBalance.available.lt(minAvaxAvailableAmmount)) {
     const depositAvaxTx = await WALLET.sendTransaction({
@@ -202,10 +190,9 @@ async function main() {
   }
 
   // Create buy order on mid price:
-  const targetBuyPrice = INIT_ARGS.midPrice - INIT_ARGS.predefinedSpread / 2;
+  const targetBuyPrice =
+    Number(ethers.utils.formatEther(midPrice)) - INIT_ARGS.predefinedSpread / 2;
   const minBuyAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetBuyPrice;
-  console.log("Target Buy Price: ", targetBuyPrice);
-  console.log("MIN BUY AMOUNT: ", minBuyAmount);
   await addBuyLimitOrder(
     TEAM6_AVAX_PAIR,
     targetBuyPrice,
@@ -214,10 +201,11 @@ async function main() {
     WALLET
   );
 
-  console.log("Added initial buy order");
+  console.log("Added buy order");
 
   // Create Sell Order on Mid Price
-  const targetSellPrice = INIT_ARGS.midPrice + INIT_ARGS.predefinedSpread / 2;
+  const targetSellPrice =
+    Number(ethers.utils.formatEther(midPrice)) + INIT_ARGS.predefinedSpread / 2;
   const minSellAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetSellPrice;
   await addSellLimitOrder(
     TEAM6_AVAX_PAIR,
@@ -226,32 +214,19 @@ async function main() {
     TradePairsContract,
     WALLET
   );
-  console.log("Added initial sell order");
+  console.log("Added sell order");
 
-  // Get Order Book
-  const orderBookQueryResult = await TradePairsContract.getNBuyBook(
-    B32(TEAM6_AVAX_PAIR.pair),
-    5,
-    5,
-    0,
-    B32("")
-  );
-  console.log(orderBookQueryResult);
-  console.log("^^ OnChain BUY OrderBook");
+  console.log("Waiting 30 seconds before cancelling all of the orders...");
+  await sleep(30000);
+  console.log("Cancelling all orders");
+  await cancelAllOrders(TradePairsContract, WALLET);
+  console.log("Cancelling all orders");
 
-  const orderBookQueryResults = await TradePairsContract.getNSellBook(
-    B32(TEAM6_AVAX_PAIR.pair),
-    5,
-    5,
-    0,
-    B32("")
-  );
-  console.log(orderBookQueryResults);
-  console.log("^^ OnChain SELL OrderBook");
-
-  // OUtput internal books:
+  // Outputting internal books:
   console.log("BIDS: ", BIDS);
   console.log("ASKS: ", ASKS);
+
+  console.log("Going into while(1) loop...");
 }
 
 main().catch((error) => {

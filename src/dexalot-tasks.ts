@@ -148,17 +148,17 @@ export async function addLimitOrder(
   TradePairContract: Contract,
   wallet: Wallet
 ) {
-  console.log(
-    "PRICE %s, QUANTITY: %s ",
-    utils.parseUnits(
-      price.toFixed(pair.quotedisplaydecimals),
-      pair.quote_evmdecimals
-    ),
-    utils.parseUnits(
-      amount.toFixed(pair.basedisplaydecimals),
-      pair.base_evmdecimals
-    )
-  );
+  // console.log(
+  //   "PRICE %s, QUANTITY: %s ",
+  //   utils.parseUnits(
+  //     price.toFixed(pair.quotedisplaydecimals),
+  //     pair.quote_evmdecimals
+  //   ),
+  //   utils.parseUnits(
+  //     amount.toFixed(pair.basedisplaydecimals),
+  //     pair.base_evmdecimals
+  //   )
+  // );
   const tradePairB32 = utils.formatBytes32String(pair.pair);
   const addOrderTxn = await TradePairContract.addOrder(
     tradePairB32,
@@ -224,6 +224,45 @@ export async function cancelAllOrders(
   // If the txn succeeds we will clear out the BIDS and ASKS arrays
   BIDS = [];
   ASKS = [];
+}
+
+export async function calcMidPriceFromOnChainOrderBook(
+  pair: string,
+  spread: number,
+  TradePairsContract: Contract,
+  wallet: Wallet
+) {
+  const buyOrderBookQueryResult = await TradePairsContract.getNBuyBook(
+    B32(pair),
+    1,
+    1,
+    0,
+    B32("")
+  );
+  const highestBuy = buyOrderBookQueryResult[0][0];
+
+  const sellOrderBookQueryResult = await TradePairsContract.getNSellBook(
+    B32(pair),
+    1,
+    1,
+    0,
+    B32("")
+  );
+  const lowestSell = sellOrderBookQueryResult[0][0];
+
+  let midPrice: BigNumber;
+  if (highestBuy.gt(0) && lowestSell.gt(0)) {
+    // If we have stuff on both order books, we find the midpoint
+    midPrice = highestBuy.add(lowestSell).div(2);
+  } else if (highestBuy.gt(0)) {
+    midPrice = highestBuy.add(spread / 2);
+  } else if (lowestSell.gt(0)) {
+    midPrice = lowestSell.sub(spread / 2);
+  } else {
+    return null;
+  }
+
+  return midPrice;
 }
 
 export function setInternalBidsArray(bids: Array<Order>) {
