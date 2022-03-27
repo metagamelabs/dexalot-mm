@@ -20,22 +20,23 @@ export interface Order {
   pair: string,
   type: Type1,
   side: Side,
-  price: number,
-  quantity: number,
-  totalamount: number,
+  status: Status,
+  price: string,
+  quantity: string,
+  totalamount: string,
   ts: string,
-  quantityfilled: number,
-  totalfee: number,
-  update_ts: number
+  quantityfilled: string,
+  totalfee: string,
+  update_ts?: string
 }
 
 export function fromRestOrder(orderFromRestApi: any) {
   const order: Order = orderFromRestApi;
-  order.price = Number(order.price);
-  order.quantity = Number(order.quantity);
-  order.totalamount = Number(order.totalamount);
-  order.quantityfilled = Number(order.quantityfilled);
-  order.totalfee = Number(order.totalfee);
+  // order.price = Number(order.price);
+  // order.quantity = Number(order.quantity);
+  // order.totalamount = Number(order.totalamount);
+  // order.quantityfilled = Number(order.quantityfilled);
+  // order.totalfee = Number(order.totalfee);
 
   return order;
 }

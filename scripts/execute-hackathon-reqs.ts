@@ -9,6 +9,10 @@ import {
   addBuyLimitOrder,
   fetchOrderBookData,
   addSellLimitOrder,
+  BIDS,
+  ASKS,
+  setInternalAsksArray,
+  setInternalBidsArray
 } from "../src/dexalot-tasks";
 import _ from "lodash";
 import C from "../src/constants";
@@ -33,10 +37,6 @@ let ExchangeContract: Contract;
 let TradePairsContract: Contract;
 let OrderBooksContract: Contract;
 
-// orderbook state
-let BIDS: Array<Order> = [];
-let ASKS: Array<Order> = [];
-
 async function initData() {
   const tradingPairsData: Array<TradePair> = await fetchTradingPairs();
   const team6AvaxPair = _.find(tradingPairsData, (x) => x.pair == "TEAM6/AVAX");
@@ -52,8 +52,8 @@ async function initData() {
       "TEAM6/AVAX"
     );
 
-  BIDS = orderBookQueryResult.rows.filter((x: Order) => x.side == Side.BUY).map((x: any) => fromRestOrder(x));
-  ASKS = orderBookQueryResult.rows.filter((x: Order) => x.side == Side.SELL).map((x: any) => fromRestOrder(x));
+  setInternalBidsArray(orderBookQueryResult.rows.filter((x: Order) => x.side == Side.BUY).map((x: any) => fromRestOrder(x)));
+  setInternalAsksArray(orderBookQueryResult.rows.filter((x: Order) => x.side == Side.SELL).map((x: any) => fromRestOrder(x)));
 }
 
 async function initWeb3Stuff() {
@@ -169,7 +169,11 @@ async function main() {
   // Get Order Book 
   const orderBookQueryResult = await TradePairsContract.getNBuyBook(B32(TEAM6_AVAX_PAIR.pair), 5, 5, 0, B32(""));
   console.log(orderBookQueryResult);
-  console.log(initData);
+  console.log("^^ OnChain OrderBook");
+
+  // OUtput internal books:
+  console.log("BIDS: ", BIDS);
+  console.log("ASKS: ", ASKS);
 }
 
 main().catch((error) => {

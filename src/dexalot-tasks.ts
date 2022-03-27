@@ -1,12 +1,16 @@
 import { DexalotMM } from "../typechain-types/DexalotMM";
 import { Signer } from "ethers";
 import { Contract, BigNumber, Wallet, utils } from "ethers";
-import { Side, Type1, Status, TradePair, B32 } from "./types";
+import { Side, Type1, Status, TradePair, B32, Order } from "./types";
 import { task } from "hardhat/config";
+import {ethers} from "ethers";
 import C from "../src/constants";
 import _ from "lodash";
 import axios from "axios";
 import { number } from "yargs";
+
+export let BIDS: Array<Order> = [];
+export let ASKS: Array<Order> = [];
 
 export async function fetchTradingPairs() {
   const result = await axios.get(
@@ -60,6 +64,36 @@ async function processOrder({
   console.log("Order Status: ", Status[orderStatus]);
   console.log("Type1: ", Type1[type1]);
   console.log("Side: ", Side[side]);
+
+  // See if it already exists in the map
+  const existingOrderObject = _.find(side == Side.BUY ? BIDS : ASKS, x => x.id == orderId);
+  if (existingOrderObject) {
+    console.log("We have an existing order(id=%s), we will update it.", orderId)
+  } else {
+    console.log("Inserting new order into internal array: ", orderId)
+    const orderObj: Order = {
+      id: orderId,
+      traderaddress: traderAddr,
+      tx: "txn",
+      pair: pairId,
+      type: type1,
+      status: orderStatus,
+      side: side,
+      price: ethers.utils.formatEther(price.toString()).toString(),
+      quantity: ethers.utils.formatEther(quantity.toString()).toString(),
+      totalamount: ethers.utils.formatEther(totalAmount.toString()).toString(),
+      ts: new Date().toISOString(),
+      quantityfilled: ethers.utils.formatEther(quantityFilled.toString()).toString(),
+      totalfee: ethers.utils.formatEther(totalFee.toString()).toString(),
+    }
+    if (side == Side.BUY) {
+      BIDS.push(orderObj)
+      BIDS = _.sortBy(BIDS, ["price", "ts"], ["desc", "desc"]);
+    } else {
+      ASKS.push(orderObj)
+      ASKS = _.sortBy(ASKS, ["price", "ts"], ["asc", "desc"])
+    }
+  }
 }
 
 export async function addBuyLimitOrder(
@@ -147,13 +181,13 @@ export async function addLimitOrder(
               pairId: utils.parseBytes32String(_log.args.pair),
               orderId: _log.args.id,
               price: _log.args.price,
-              totalAmount: _log.args.totalAmount,
+              totalAmount: _log.args.totalamount,
               quantity: _log.args.quantity,
               side: _log.args.side,
               type1: _log.args.type1,
               orderStatus: _log.args.status,
-              quantityFilled: _log.args.quantityFilled,
-              totalFee: _log.args.totalFee,
+              quantityFilled: _log.args.quantityfilled,
+              totalFee: _log.args.totalfee,
             });
           }
         } else {
@@ -177,4 +211,12 @@ export async function cancelAllOrders(
     getOrdersResult.rows.map((x: { id: string }) => x.id)
   );
   await cancelAllOrdersTxn.wait();
+}
+
+export function setInternalBidsArray(bids: Array<Order>) {
+  BIDS = bids;
+}
+
+export function setInternalAsksArray(asks: Array<Order>) {
+  ASKS = asks;
 }
