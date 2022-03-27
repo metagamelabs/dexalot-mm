@@ -3,7 +3,7 @@ import { Signer } from "ethers";
 import { Contract, BigNumber, Wallet, utils } from "ethers";
 import { Side, Type1, Status, TradePair, B32, Order } from "./types";
 import { task } from "hardhat/config";
-import {ethers} from "ethers";
+import { ethers } from "ethers";
 import C from "../src/constants";
 import _ from "lodash";
 import axios from "axios";
@@ -11,6 +11,8 @@ import { number } from "yargs";
 
 export let BIDS: Array<Order> = [];
 export let ASKS: Array<Order> = [];
+
+export let lastPrice: BigNumber;
 
 export async function fetchTradingPairs() {
   const result = await axios.get(
@@ -66,11 +68,17 @@ async function processOrder({
   console.log("Side: ", Side[side]);
 
   // See if it already exists in the map
-  const existingOrderObject = _.find(side == Side.BUY ? BIDS : ASKS, x => x.id == orderId);
+  const existingOrderObject = _.find(
+    side == Side.BUY ? BIDS : ASKS,
+    (x) => x.id == orderId
+  );
   if (existingOrderObject) {
-    console.log("We have an existing order(id=%s), we will update it.", orderId)
+    console.log(
+      "We have an existing order(id=%s), we will update it.",
+      orderId
+    );
   } else {
-    console.log("Inserting new order into internal array: ", orderId)
+    console.log("Inserting new order into internal array: ", orderId);
     const orderObj: Order = {
       id: orderId,
       traderaddress: traderAddr,
@@ -83,15 +91,17 @@ async function processOrder({
       quantity: ethers.utils.formatEther(quantity.toString()).toString(),
       totalamount: ethers.utils.formatEther(totalAmount.toString()).toString(),
       ts: new Date().toISOString(),
-      quantityfilled: ethers.utils.formatEther(quantityFilled.toString()).toString(),
+      quantityfilled: ethers.utils
+        .formatEther(quantityFilled.toString())
+        .toString(),
       totalfee: ethers.utils.formatEther(totalFee.toString()).toString(),
-    }
+    };
     if (side == Side.BUY) {
-      BIDS.push(orderObj)
+      BIDS.push(orderObj);
       BIDS = _.sortBy(BIDS, ["price", "ts"], ["desc", "desc"]);
     } else {
-      ASKS.push(orderObj)
-      ASKS = _.sortBy(ASKS, ["price", "ts"], ["asc", "desc"])
+      ASKS.push(orderObj);
+      ASKS = _.sortBy(ASKS, ["price", "ts"], ["asc", "desc"]);
     }
   }
 }
@@ -211,6 +221,9 @@ export async function cancelAllOrders(
     getOrdersResult.rows.map((x: { id: string }) => x.id)
   );
   await cancelAllOrdersTxn.wait();
+  // If the txn succeeds we will clear out the BIDS and ASKS arrays
+  BIDS = [];
+  ASKS = [];
 }
 
 export function setInternalBidsArray(bids: Array<Order>) {

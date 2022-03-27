@@ -7,6 +7,7 @@ import {
   fetchTradingPairs,
   fetchDeploymentAbi,
   fetchOrderBookData,
+  cancelAllOrders,
 } from "./src/dexalot-tasks";
 import { B32 } from "./src/types";
 import "@nomiclabs/hardhat-waffle";
@@ -16,6 +17,8 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-abi-exporter";
+import _ from "lodash";
+import chalk from "chalk";
 
 dotenv.config();
 
@@ -92,16 +95,70 @@ task(
       C.DEXALOT_TRADE_PAIRS_ADDR
     );
 
-    const getOrdersResult = await fetchOrderBookData(
-      wallet.address,
-      "TEAM6/AVAX"
-    );
-    const cancelAllOrdersTxn = await TradePairsContract.cancelAllOrders(
-      B32("TEAM6/AVAX"),
-      getOrdersResult.rows.map((x: { id: string }) => x.id)
-    );
-    await cancelAllOrdersTxn.wait();
+    await cancelAllOrders(TradePairsContract, wallet);
+
     console.log("cancel orders txn done");
+  }
+);
+
+task(
+  "printOnChainOrderBook",
+  "Cancels all orders",
+  async (args: any, hre): Promise<void> => {
+    // get orders
+    const wallet = await new hre.ethers.Wallet(
+      "8e9cdb3e5c49c5382c888772e0651cb62d89837fcddb7beb5875a2cf6e412d45",
+      await hre.ethers.provider
+    );
+    const TradePairsFactory = await hre.ethers.getContractFactory(
+      "TradePairs",
+      wallet
+    );
+    const TradePairsContract = TradePairsFactory.attach(
+      C.DEXALOT_TRADE_PAIRS_ADDR
+    );
+
+    console.log(chalk.bgRed.white("SELLS"));
+    console.log(chalk.bgRed.white("Price\tAmount"));
+    const sellOrderBookQueryResult = await TradePairsContract.getNSellBook(
+      B32("TEAM6/AVAX"),
+      5,
+      5,
+      0,
+      B32("")
+    );
+    const zippedSellOrderBook = _.zip(
+      sellOrderBookQueryResult[0].map((x: BigNumber) =>
+        hre.ethers.utils.formatEther(x)
+      ),
+      sellOrderBookQueryResult[1].map((x: BigNumber) =>
+        hre.ethers.utils.formatEther(x)
+      )
+    ).filter((x: any) => x[1] > 0);
+    zippedSellOrderBook.forEach((x) => {
+      console.log(chalk.red(x[0], "\t", x[1]));
+    });
+
+    const buyOrderBookQueryResult = await TradePairsContract.getNBuyBook(
+      B32("TEAM6/AVAX"),
+      5,
+      5,
+      0,
+      B32("")
+    );
+    const zippedBuyOrderBook = _.zip(
+      buyOrderBookQueryResult[0].map((x: BigNumber) =>
+        hre.ethers.utils.formatEther(x)
+      ),
+      buyOrderBookQueryResult[1].map((x: BigNumber) =>
+        hre.ethers.utils.formatEther(x)
+      )
+    ).filter((x: any) => x[1] > 0);
+    zippedBuyOrderBook.forEach((x) => {
+      console.log(chalk.green(x[0], "\t", x[1]));
+    });
+    console.log(chalk.bgGreen.white("Price\tAmount"));
+    console.log(chalk.bgGreen.white("BUYS:"));
   }
 );
 

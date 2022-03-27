@@ -1,4 +1,4 @@
-import { OrderBooks } from './../typechain-types/OrderBooks';
+import { OrderBooks } from "./../typechain-types/OrderBooks";
 import { DexalotMM } from "../typechain-types/DexalotMM";
 import { ethers } from "hardhat";
 import { TradePair, B32, Order, Side, fromRestOrder } from "../src/types";
@@ -12,11 +12,20 @@ import {
   BIDS,
   ASKS,
   setInternalAsksArray,
-  setInternalBidsArray
+  setInternalBidsArray,
+  cancelAllOrders,
 } from "../src/dexalot-tasks";
 import _ from "lodash";
 import C from "../src/constants";
 import { Contract, Wallet, BigNumber } from "ethers";
+import { skipPartiallyEmittedExpressions } from "typescript";
+import { ROCKET_SUBGRAPH } from "@traderjoe-xyz/sdk";
+
+function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 // init args
 const INIT_ARGS = {
@@ -48,12 +57,20 @@ async function initData() {
   TEAM6_AVAX_PAIR = team6AvaxPair;
 
   const orderBookQueryResult = await fetchOrderBookData(
-      C.DEXALOT_MM_WALLET_ADDR,
-      "TEAM6/AVAX"
-    );
+    C.DEXALOT_MM_WALLET_ADDR,
+    "TEAM6/AVAX"
+  );
 
-  setInternalBidsArray(orderBookQueryResult.rows.filter((x: Order) => x.side == Side.BUY).map((x: any) => fromRestOrder(x)));
-  setInternalAsksArray(orderBookQueryResult.rows.filter((x: Order) => x.side == Side.SELL).map((x: any) => fromRestOrder(x)));
+  setInternalBidsArray(
+    orderBookQueryResult.rows
+      .filter((x: Order) => x.side == Side.BUY)
+      .map((x: any) => fromRestOrder(x))
+  );
+  setInternalAsksArray(
+    orderBookQueryResult.rows
+      .filter((x: Order) => x.side == Side.SELL)
+      .map((x: any) => fromRestOrder(x))
+  );
 }
 
 async function initWeb3Stuff() {
@@ -98,8 +115,53 @@ async function main() {
   // initial configuration:
   console.log("Initial Confnig: ", INIT_ARGS);
 
-  // Check OrderBook and CANCEL orders if necessary
+  console.log("Determining mid price from on chain orderbook");
+  const buyOrderBookQueryResult = await TradePairsContract.getNBuyBook(
+    B32(TEAM6_AVAX_PAIR.pair),
+    1,
+    1,
+    0,
+    B32("")
+  );
+  console.log("BUY ORDER BOOK: ", buyOrderBookQueryResult);
+  const highestBuy = buyOrderBookQueryResult[0][0];
 
+  const sellOrderBookQueryResult = await TradePairsContract.getNSellBook(
+    B32(TEAM6_AVAX_PAIR.pair),
+    1,
+    1,
+    0,
+    B32("")
+  );
+  console.log("SELL ORDER BOOK: ", sellOrderBookQueryResult);
+  const lowestSell = sellOrderBookQueryResult[0][0];
+
+  let midPrice: BigNumber;
+  if (highestBuy.gt(0) && lowestSell.gt(0)) {
+    // If we have stuff on both order books, we find the midpoint
+    midPrice = highestBuy.add(lowestSell).div(2).toString();
+  } else if (highestBuy.gt(0)) {
+    midPrice = highestBuy.add(INIT_ARGS.predefinedSpread / 2);
+  } else if (lowestSell.gt(0)) {
+    midPrice = lowestSell.sub(INIT_ARGS.predefinedSpread / 2);
+  } else {
+    midPrice = ethers.utils.parseEther(INIT_ARGS.midPrice.toString());
+  }
+  console.log(
+    "Calculated Mid Price: %s, (%s)",
+    midPrice,
+    ethers.utils.formatEther(midPrice.toString())
+  );
+
+  // Check OrderBook and CANCEL orders if necessary
+  // if (BIDS.length > 0 || ASKS.length > 0) {
+  //   console.log("We have %s BUY and %s SELL existing orders", BIDS.length, ASKS.length);
+  //   console.log("Cancelling all orders after 10 seconds")
+  //   await sleep(10000);
+  //   console.log("Cancelling orders...")
+  //   await cancelAllOrders(TradePairsContract, WALLET);
+  //   console.log("Orders cancelled!")
+  // }
 
   // Add funds if needed
   const team6Balance = await PortfolioContract.getBalance(
@@ -142,8 +204,8 @@ async function main() {
   // Create buy order on mid price:
   const targetBuyPrice = INIT_ARGS.midPrice - INIT_ARGS.predefinedSpread / 2;
   const minBuyAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetBuyPrice;
-  console.log("Target Buy Price: ", targetBuyPrice)
-  console.log("MIN BUY AMOUNT: ", minBuyAmount)
+  console.log("Target Buy Price: ", targetBuyPrice);
+  console.log("MIN BUY AMOUNT: ", minBuyAmount);
   await addBuyLimitOrder(
     TEAM6_AVAX_PAIR,
     targetBuyPrice,
@@ -166,10 +228,26 @@ async function main() {
   );
   console.log("Added initial sell order");
 
-  // Get Order Book 
-  const orderBookQueryResult = await TradePairsContract.getNBuyBook(B32(TEAM6_AVAX_PAIR.pair), 5, 5, 0, B32(""));
+  // Get Order Book
+  const orderBookQueryResult = await TradePairsContract.getNBuyBook(
+    B32(TEAM6_AVAX_PAIR.pair),
+    5,
+    5,
+    0,
+    B32("")
+  );
   console.log(orderBookQueryResult);
-  console.log("^^ OnChain OrderBook");
+  console.log("^^ OnChain BUY OrderBook");
+
+  const orderBookQueryResults = await TradePairsContract.getNSellBook(
+    B32(TEAM6_AVAX_PAIR.pair),
+    5,
+    5,
+    0,
+    B32("")
+  );
+  console.log(orderBookQueryResults);
+  console.log("^^ OnChain SELL OrderBook");
 
   // OUtput internal books:
   console.log("BIDS: ", BIDS);

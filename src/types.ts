@@ -14,20 +14,20 @@ export interface TradePair {
 }
 
 export interface Order {
-  id: string,
-  traderaddress: string,
-  tx: string,
-  pair: string,
-  type: Type1,
-  side: Side,
-  status: Status,
-  price: string,
-  quantity: string,
-  totalamount: string,
-  ts: string,
-  quantityfilled: string,
-  totalfee: string,
-  update_ts?: string
+  id: string;
+  traderaddress: string;
+  tx: string;
+  pair: string;
+  type: Type1;
+  side: Side;
+  status: Status;
+  price: string;
+  quantity: string;
+  totalamount: string;
+  ts: string;
+  quantityfilled: string;
+  totalfee: string;
+  update_ts?: string;
 }
 
 export function fromRestOrder(orderFromRestApi: any) {
