@@ -1,4 +1,4 @@
-import { OrderBooks } from './../typechain-types/OrderBooks';
+import { OrderBooks } from "./../typechain-types/OrderBooks";
 import { DexalotMM } from "../typechain-types/DexalotMM";
 import { ethers } from "hardhat";
 import { TradePair, B32 } from "../src/types";
@@ -85,6 +85,8 @@ async function main() {
   // initial configuration:
   console.log("Initial Confnig: ", INIT_ARGS);
 
+  // Check OrderBook and CANCEL orders if necessary
+
   // Add funds if needed
   const team6Balance = await PortfolioContract.getBalance(
     WALLET.address,
@@ -126,8 +128,8 @@ async function main() {
   // Create buy order on mid price:
   const targetBuyPrice = INIT_ARGS.midPrice - INIT_ARGS.predefinedSpread / 2;
   const minBuyAmount = TEAM6_AVAX_PAIR.mintrade_amnt / targetBuyPrice;
-  console.log("Target Buy Price: ", targetBuyPrice)
-  console.log("MIN BUY AMOUNT: ", minBuyAmount)
+  console.log("Target Buy Price: ", targetBuyPrice);
+  console.log("MIN BUY AMOUNT: ", minBuyAmount);
   await addBuyLimitOrder(
     TEAM6_AVAX_PAIR,
     targetBuyPrice,
@@ -150,8 +152,14 @@ async function main() {
   );
   console.log("Added initial sell order");
 
-  // Get Order Book 
-  const orderBookQueryResult = await OrderBooksContract.getNBuyBook(B32(TEAM6_AVAX_PAIR.pair), 5, 5, 0, B32(""));
+  // Get Order Book
+  const orderBookQueryResult = await TradePairsContract.getNBuyBook(
+    B32(TEAM6_AVAX_PAIR.pair),
+    5,
+    5,
+    0,
+    B32("")
+  );
   console.log(orderBookQueryResult);
 }
 

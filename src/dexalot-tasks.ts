@@ -1,7 +1,7 @@
 import { DexalotMM } from "../typechain-types/DexalotMM";
 import { Signer } from "ethers";
 import { Contract, BigNumber, Wallet, utils } from "ethers";
-import { Side, Type1, Status, TradePair } from "./types";
+import { Side, Type1, Status, TradePair, B32 } from "./types";
 import { task } from "hardhat/config";
 import C from "../src/constants";
 import _ from "lodash";
@@ -18,6 +18,14 @@ export async function fetchTradingPairs() {
 export async function fetchDeploymentAbi(contractName: string) {
   const result = await axios.get(
     `https://api.dexalot-dev.com/api/trading/deploymentabi/${contractName}`
+  );
+  return result.data;
+}
+
+export async function fetchOrderBookData(traderaddress: string, pair: string) {
+  const result = await axios.get(
+    `https://api.dexalot-dev.com/api/trading/openorders/params`,
+    { params: { traderaddress, pair } }
   );
   return result.data;
 }
@@ -96,14 +104,17 @@ export async function addLimitOrder(
   TradePairContract: Contract,
   wallet: Wallet
 ) {
-  console.log("PRICE %s, QUANTITY: %s ",  utils.parseUnits(
-    price.toFixed(pair.quotedisplaydecimals),
-    pair.quote_evmdecimals
-  ),
-  utils.parseUnits(
-    amount.toFixed(pair.basedisplaydecimals),
-    pair.base_evmdecimals
-  ),)
+  console.log(
+    "PRICE %s, QUANTITY: %s ",
+    utils.parseUnits(
+      price.toFixed(pair.quotedisplaydecimals),
+      pair.quote_evmdecimals
+    ),
+    utils.parseUnits(
+      amount.toFixed(pair.basedisplaydecimals),
+      pair.base_evmdecimals
+    )
+  );
   const tradePairB32 = utils.formatBytes32String(pair.pair);
   const addOrderTxn = await TradePairContract.addOrder(
     tradePairB32,
@@ -115,7 +126,7 @@ export async function addLimitOrder(
       amount.toFixed(pair.basedisplaydecimals),
       pair.base_evmdecimals
     ),
-    Side.BUY,
+    side == Side.BUY ? 0 : 1,
     Type1.LIMIT
   );
   const orderLog = await addOrderTxn.wait();
@@ -151,4 +162,19 @@ export async function addLimitOrder(
       }
     }
   }
+}
+
+export async function cancelAllOrders(
+  TradePairsContract: Contract,
+  wallet: Wallet
+) {
+  const getOrdersResult = await fetchOrderBookData(
+    wallet.address,
+    "TEAM6/AVAX"
+  );
+  const cancelAllOrdersTxn = await TradePairsContract.cancelAllOrders(
+    B32("TEAM6/AVAX"),
+    getOrdersResult.rows.map((x: { id: string }) => x.id)
+  );
+  await cancelAllOrdersTxn.wait();
 }

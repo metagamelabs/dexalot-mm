@@ -1,4 +1,4 @@
-import {ethers} from "ethers";
+import { ethers } from "ethers";
 export interface TradePair {
   pair: string;
   base: string;
@@ -6,7 +6,7 @@ export interface TradePair {
   basedisplaydecimals: number;
   quotedisplaydecimals: number;
   baseaddress: string;
-  quoteaddress?: string;
+  quoteaddress: string | null;
   base_evmdecimals: number;
   quote_evmdecimals: number;
   mintrade_amnt: number;

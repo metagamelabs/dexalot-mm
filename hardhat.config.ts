@@ -3,7 +3,12 @@ import * as dotenv from "dotenv";
 import { HardhatUserConfig, task } from "hardhat/config";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber } from "ethers";
-import { fetchTradingPairs, fetchDeploymentAbi } from "./src/dexalot-tasks";
+import {
+  fetchTradingPairs,
+  fetchDeploymentAbi,
+  fetchOrderBookData,
+} from "./src/dexalot-tasks";
+import { B32 } from "./src/types";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-ethers";
 import C from "./src/constants";
@@ -66,10 +71,39 @@ task(
   "fetchDeploymentAbi",
   "Prints the deployment info from api",
   async (args: any, hre): Promise<void> => {
-    console.log("ARGS: ", args);
     console.log(await fetchDeploymentAbi(args.contractName));
   }
 ).addParam("contractName", "contract name to query");
+
+task(
+  "cancelAllOrders",
+  "Cancels all orders",
+  async (args: any, hre): Promise<void> => {
+    // get orders
+    const wallet = await new hre.ethers.Wallet(
+      "8e9cdb3e5c49c5382c888772e0651cb62d89837fcddb7beb5875a2cf6e412d45",
+      await hre.ethers.provider
+    );
+    const TradePairsFactory = await hre.ethers.getContractFactory(
+      "TradePairs",
+      wallet
+    );
+    const TradePairsContract = TradePairsFactory.attach(
+      C.DEXALOT_TRADE_PAIRS_ADDR
+    );
+
+    const getOrdersResult = await fetchOrderBookData(
+      wallet.address,
+      "TEAM6/AVAX"
+    );
+    const cancelAllOrdersTxn = await TradePairsContract.cancelAllOrders(
+      B32("TEAM6/AVAX"),
+      getOrdersResult.rows.map((x: { id: string }) => x.id)
+    );
+    await cancelAllOrdersTxn.wait();
+    console.log("cancel orders txn done");
+  }
+);
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -156,6 +190,12 @@ const config: HardhatUserConfig = {
       url: "https://api.avax.network/ext/bc/C/rpc",
       gasPrice: 225000000000,
       chainId: 43114,
+      accounts: [],
+    },
+    dexalotDev: {
+      url: "https://node.dexalot-dev.com/ext/bc/C/rpc",
+      gasPrice: 225000000000,
+      chainId: 43112,
       accounts: [],
     },
   },
